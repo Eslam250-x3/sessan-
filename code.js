@@ -43,7 +43,8 @@ const CONFIG = {
         QUESTION_TYPE: /<strong>question_type<\/strong>:\s*(\w+)/,
     },
     PROPERTIES: {
-        IMPORTED_IDS: 'IMPORTED_SLIDE_IDS'
+        IMPORTED_IDS: 'IMPORTED_SLIDE_IDS',
+        COLLAPSE_STATE: 'COLLAPSE_STATE'
     },
     PLACEMENTS: ['live', 'example', 'ai', 'homework', 'interactive_example'],
     FINAL_SLIDE_TITLES: {
@@ -113,6 +114,55 @@ function getSavedUserData() {
         htmlFileUrl: properties.getProperty('HTML_FILE_URL') || '',
         imageFolderId: properties.getProperty('IMAGE_FOLDER_ID') || ''
     };
+}
+
+
+/**
+ * Saves the collapse state of header, footer, and preview controls.
+ * @param {boolean} headerCollapsed Whether the header is collapsed.
+ * @param {boolean} footerCollapsed Whether the footer is collapsed.
+ * @param {boolean} previewControlsCollapsed Whether the preview controls are collapsed.
+ */
+function saveCollapseState(headerCollapsed, footerCollapsed, previewControlsCollapsed) {
+    try {
+        const properties = PropertiesService.getUserProperties();
+        const collapseState = {
+            headerCollapsed: headerCollapsed || false,
+            footerCollapsed: footerCollapsed || false,
+            previewControlsCollapsed: previewControlsCollapsed || false
+        };
+        properties.setProperty(CONFIG.PROPERTIES.COLLAPSE_STATE, JSON.stringify(collapseState));
+        return true;
+    } catch (error) {
+        Logger.log(`Error saving collapse state: ${error.toString()}`);
+        return false;
+    }
+}
+
+/**
+ * Retrieves the saved collapse state of header, footer, and preview controls.
+ * @return {Object} An object containing the collapse state.
+ */
+function getCollapseState() {
+    try {
+        const properties = PropertiesService.getUserProperties();
+        const collapseStateJson = properties.getProperty(CONFIG.PROPERTIES.COLLAPSE_STATE);
+        if (collapseStateJson) {
+            return JSON.parse(collapseStateJson);
+        }
+        return {
+            headerCollapsed: false,
+            footerCollapsed: false,
+            previewControlsCollapsed: false
+        };
+    } catch (error) {
+        Logger.log(`Error getting collapse state: ${error.toString()}`);
+        return {
+            headerCollapsed: false,
+            footerCollapsed: false,
+            previewControlsCollapsed: false
+        };
+    }
 }
 
 
@@ -455,7 +505,20 @@ function addIdBox(slide, idText, isCheckpoint) {
    
     const textRange = idShape.getText();
     textRange.setText(idText);
-    textRange.getParagraphStyle().setParagraphAlignment(SlidesApp.ParagraphAlignment.LEFT);
+    
+    // Set alignment for each paragraph individually to avoid API issues
+    try {
+        textRange.getParagraphs().forEach(paragraph => {
+            try {
+                paragraph.getRange().getParagraphStyle().setParagraphAlignment(SlidesApp.ParagraphAlignment.LEFT);
+            } catch (e) {
+                // Fallback: skip alignment if it fails
+                Logger.log(`Alignment failed for paragraph: ${e.message}`);
+            }
+        });
+    } catch (e) {
+        Logger.log(`Paragraph alignment failed: ${e.message}`);
+    }
 
 
     const overallStyle = textRange.getTextStyle();
@@ -510,10 +573,22 @@ function addQuestionContent(slide, slideData) {
     }
     textRange.setText(fullText);
    
+    // Set alignment for each paragraph individually to avoid API issues
+    try {
+        textRange.getParagraphs().forEach(paragraph => {
+            try {
+                paragraph.getRange().getParagraphStyle().setParagraphAlignment(SlidesApp.ParagraphAlignment.RIGHT);
+            } catch (e) {
+                // Fallback: skip alignment if it fails
+                Logger.log(`Alignment failed for paragraph: ${e.message}`);
+            }
+        });
+    } catch (e) {
+        Logger.log(`Paragraph alignment failed: ${e.message}`);
+    }
+
+
     const paragraphs = textRange.getParagraphs();
-    paragraphs.forEach(p => p.setParagraphAlignment(SlidesApp.ParagraphAlignment.RIGHT));
-
-
     if (paragraphs.length > 0) {
         paragraphs[0].getRange().getTextStyle().setFontFamily('Arial').setFontSize(20).setBold(true).setForegroundColor('#374151');
     }
