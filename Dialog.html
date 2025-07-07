@@ -196,6 +196,9 @@ footer { background: var(--card-bg); border-radius: 16px; padding: 20px; backdro
     <div class="preview-header">
         <button id="backToFormBtn" class="btn btn-secondary">   ✏️  الرجوع   وتعديل   المدخلات  </button>
         <button id="filterBtn" class="btn btn-secondary" style="margin-right:12px;">🔎 تصفية</button>
+        <button id="unlinkedCountBtn" class="btn btn-secondary" style="margin-right:12px; background:#f59e0b; color:#fff; font-weight:bold; border:2px solid #d97706; display:none;">
+          🟧 <span id="unlinkedCount">0</span> Unlinked
+        </button>
     </div>
     <div id="statusContainer"></div>
     <div id="loading" class="loading-overlay" style="display: none;">
@@ -333,6 +336,27 @@ footer { background: var(--card-bg); border-radius: 16px; padding: 20px; backdro
 
 
 
+<!-- أضف نافذة منبثقة لعرض ونسخ IDات unlinked -->
+<div id="unlinkedModal" class="modal">
+  <div class="modal-content" style="min-width:320px;max-width:90vw;">
+    <div class="modal-header">
+      <h2 class="modal-title">🟧 الأسئلة Unlinked</h2>
+      <button class="modal-close-btn" data-modal-id="unlinkedModal">✖</button>
+    </div>
+    <div class="modal-body" id="unlinkedModalBody" style="padding:16px;display:flex;flex-direction:column;gap:12px;"></div>
+    <div class="modal-footer" style="display:flex;gap:12px;justify-content:flex-end;">
+      <button id="copyUnlinkedBtn" class="btn btn-primary">نسخ كل IDات</button>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
 </div>
 
 
@@ -384,6 +408,12 @@ const ui = {
     filterModal: document.getElementById('filterModal'),
     closeFilterModal: document.getElementById('closeFilterModal'),
     applyFilterBtn: document.getElementById('applyFilterBtn'),
+    unlinkedCountBtn: document.getElementById('unlinkedCountBtn'),
+    unlinkedCount: document.getElementById('unlinkedCount'),
+    unlinkedModal: document.getElementById('unlinkedModal'),
+    unlinkedModalBody: document.getElementById('unlinkedModalBody'),
+    copyUnlinkedBtn: document.getElementById('copyUnlinkedBtn'),
+    unlinkedIdsArea: document.getElementById('unlinkedIdsArea'),
 };
 
 
@@ -393,7 +423,20 @@ const ui = {
 
 
 
-document.addEventListener('DOMContentLoaded', initialize);
+document.addEventListener('DOMContentLoaded', function() {
+    // رسالة توضيحية إذا لم تكن البيئة Google Apps Script
+    if (typeof google === 'undefined' || !google.script || !google.script.run) {
+        showMessage('⚠️ يجب تشغيل هذه الصفحة من خلال Google Apps Script فقط. بعض الميزات لن تعمل في المتصفح مباشرة.', 'error');
+        // تعطيل الأزرار التي تعتمد على السيرفر
+        ui.previewBtn.disabled = true;
+        ui.importBtn.disabled = true;
+        ui.updateFromSheetBtn.disabled = true;
+        ui.resetImportedBtn.disabled = true;
+    }
+    initialize();
+    // تحديث عداد unlinked عند كل رسم
+    updateUnlinkedCount();
+});
 
 
 
@@ -419,7 +462,7 @@ function setupPlacementFilters() {
   const placements = (window.CONFIG && CONFIG.PLACEMENTS) || ['live','example','ai','homework','interactive_example'];
   const container = document.getElementById('placementFilters');
   if (!container) return;
-  container.innerHTML = placements.map(p => `<label><input type="checkbox" name="placementFilter" value="${p}"> ${p}</label>`).join('');
+  container.innerHTML = placements.map(p => `<label><input type="checkbox" name="placementFilter" value="${p}"> ${p}</option>`).join('');
 }
 
 
@@ -483,6 +526,36 @@ function setupEventListeners() {
 
 
     addPreviewEventListeners();
+
+    // حدث عند الضغط على زر عداد unlinked
+    const unlinkedCountBtn = document.getElementById('unlinkedCountBtn');
+    if (unlinkedCountBtn) {
+        unlinkedCountBtn.addEventListener('click', function() {
+            const ids = allSlidesData.filter(s => s.isUnlinked && s.questionId && s.questionId.length === 12).map(s => s.questionId);
+            const body = document.getElementById('unlinkedModalBody');
+            if (body) {
+                if (ids.length === 0) {
+                    body.innerHTML = '<div>لا يوجد أسئلة unlinked مكونة من 12 رقم.</div>';
+                } else {
+                    body.innerHTML = `<div style="margin-bottom:8px;">عدد الأسئلة: <b>${ids.length}</b></div><textarea id="unlinkedIdsArea" style="width:100%;height:120px;">${ids.join('\n')}</textarea>`;
+                }
+            }
+            document.getElementById('unlinkedModal').style.display = 'flex';
+        });
+    }
+
+    // حدث نسخ IDات unlinked
+    const copyUnlinkedBtn = document.getElementById('copyUnlinkedBtn');
+    if (copyUnlinkedBtn) {
+        copyUnlinkedBtn.addEventListener('click', function() {
+            const area = document.getElementById('unlinkedIdsArea');
+            if (area) {
+                area.select();
+                document.execCommand('copy');
+                showMessage(`تم نسخ ${area.value.split('\n').filter(Boolean).length} ID`, 'success');
+            }
+        });
+    }
 }
  function openHtmlSourcesModal() {
     ui.htmlSourcesContainer.innerHTML = '';
@@ -572,6 +645,8 @@ function loadSavedData() {
 function validateInputs() {
     const isValid = htmlSourceUrls.length > 0 && ui.folderId.value.trim();
     ui.previewBtn.disabled = !isValid || isLoading;
+    // تحسين: تعطيل زر الاستيراد إذا لم تكن في وضع المعاينة
+    ui.importBtn.disabled = isLoading || allSlidesData.filter(s => s.selected).length === 0 || !ui.body.classList.contains('preview-mode');
 }
 
 
@@ -861,22 +936,16 @@ function renderSlides(slides) {
             slide.isCheckpoint ? `<button class='checkpoint-badge' data-action='toggle-checkpoint'>Checkpoint</button>` : null
         ].filter(Boolean).join(' • ');
 
-
-
-
-
-
-
-
         // شارة الترقيم
         const indexBadge = `<div class="slide-index-badge">${index + 1}</div>`;
 
-
-
-
-
-
-
+        // زر unlinked/linked
+        let unlinkedBtn = '';
+        if (slide.isQuestion && slide.isUnlinked) {
+            unlinkedBtn = `<button class="unlinked-badge" data-action="toggle-unlinked">unlinked</button>`;
+        } else if (slide.isQuestion && slide.isLinked) {
+            unlinkedBtn = `<span class="linked-badge">linked</span>`;
+        }
 
         return `
             <div class="${itemClasses}" id="item-${index}" data-index="${index}">
@@ -890,6 +959,7 @@ function renderSlides(slides) {
                         ${!slide.isQuestion && slide.sectionId ? `<button class="btn-toggle-section-id ${slide.showSectionId ? 'active' : ''}" data-action="toggle-id">${slide.showSectionId ? '  إخفاء  ID' : '  إظهار  ID'}</button>` : ''}
                         ${slide.isQuestion ? `<button class="btn-checkpoint ${slide.isCheckpoint ? 'active' : ''}" data-action="set-checkpoint">Checkpoint</button>` : ''}
                         ${placementHtml}
+                        ${unlinkedBtn}
                         <div class="slide-title" id="title-${index}">${slide.title}${isBank ? " <span class='bank-badge'>بنك</span>" : ''}</div>
                     </div>
                     ${imageHtml}
@@ -906,11 +976,13 @@ function renderSlides(slides) {
     ui.slidesPreview.scrollTop = scrollPosition;
     initializeSortable();
     updateImportButtonState();
+    updateUnlinkedCount(); // استدعِ updateUnlinkedCount بعد كل renderSlides
 }
  // --- Helper Functions ---
 function onApiError(error) {
     setLoadingState(false);
-    showMessage(`  خطأ   غير   متوقع : ${error.message}`, 'error');
+    const msg = (error && error.message) ? error.message : (typeof error === 'string' ? error : 'حدث خطأ غير متوقع');
+    showMessage(`  خطأ   غير   متوقع : ${msg}`, 'error');
     exitPreviewMode();
 }
 
@@ -1062,6 +1134,16 @@ function addPreviewEventListeners() {
             allSlidesData.forEach(slide => slide.isCheckpoint = false);
             allSlidesData[index].isCheckpoint = !isCurrentlyCheckpoint;
             renderSlides(allSlidesData);
+        } else if (e.target.dataset.action === 'toggle-unlinked') {
+            // عكس الحالة
+            if (allSlidesData[index].isUnlinked) {
+                allSlidesData[index].isUnlinked = false;
+                allSlidesData[index].isLinked = true;
+            } else {
+                allSlidesData[index].isUnlinked = true;
+                allSlidesData[index].isLinked = false;
+            }
+            renderSlides(allSlidesData);
         }
     });
 
@@ -1109,12 +1191,23 @@ function addPreviewEventListeners() {
     }
     const [movedItem] = allSlidesData.splice(oldIndex, 1);
     allSlidesData.splice(newIndex, 0, movedItem);
-    renderSlides(allSlidesData);
-    const newCheckbox = document.getElementById(`slide-${newIndex}`);
-    if (newCheckbox) {
-        newCheckbox.checked = true;
-        updateSlideVisuals(newIndex);
+
+    // نقل العنصر في DOM مباشرة
+    const slidesPreview = ui.slidesPreview;
+    const oldElem = document.getElementById(`item-${oldIndex}`);
+    const newElem = document.getElementById(`item-${newIndex}`);
+    if (oldElem && newElem && oldElem !== newElem) {
+        if (newIndex > oldIndex) {
+            newElem.after(oldElem);
+        } else {
+            newElem.before(oldElem);
+        }
+        updateSlidesIndexing();
+    } else {
+        // fallback: إعادة رسم الكل إذا حدث خطأ
+        renderSlides(allSlidesData);
     }
+
     if (shouldScroll) {
         const newItemElement = document.getElementById(`item-${newIndex}`);
         if (newItemElement) {
@@ -1123,18 +1216,28 @@ function addPreviewEventListeners() {
     }
 }
 
-
-
-
-
-
-
+function updateSlidesIndexing() {
+    // تحديث أرقام الشرائح وخصائص العناصر بعد النقل
+    const items = ui.slidesPreview.querySelectorAll('.slide-item');
+    items.forEach((item, idx) => {
+        item.dataset.index = idx;
+        item.id = `item-${idx}`;
+        const badge = item.querySelector('.slide-index-badge');
+        if (badge) badge.textContent = idx + 1;
+        const checkbox = item.querySelector('.slide-checkbox');
+        if (checkbox) checkbox.id = `slide-${idx}`;
+        // تحديث التحديد
+        checkbox.checked = allSlidesData[idx].selected;
+        item.classList.toggle('selected', allSlidesData[idx].selected);
+    });
+    updateImportButtonState();
+}
 
 function updateSlideVisuals(index) {
     const item = document.getElementById(`item-${index}`);
     const checkbox = document.getElementById(`slide-${index}`);
     if (!item || !checkbox) return;
-    item.classList.toggle('selected', checkbox.checked);
+    item.classList.toggle('selected', allSlidesData[index].selected);
     checkbox.checked = allSlidesData[index].selected;
     updateImportButtonState();
 }
@@ -1286,6 +1389,16 @@ function applyFilter() {
  renderSlides(filteredSlides);
  // إغلاق نافذة الفلترة
  ui.filterModal.style.display = 'none';
+}
+
+function updateUnlinkedCount() {
+    const count = allSlidesData.filter(s => s.isUnlinked && s.questionId && s.questionId.length === 12).length;
+    const btn = document.getElementById('unlinkedCountBtn');
+    const span = document.getElementById('unlinkedCount');
+    if (btn && span) {
+        span.textContent = count;
+        btn.style.display = count > 0 ? 'inline-block' : 'none';
+    }
 }
 </script>
 </body>
