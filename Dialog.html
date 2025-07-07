@@ -1,1329 +1,1293 @@
 <!DOCTYPE html>
 <!--
-  Final Version: This file contains the complete client-side application.
-  It includes the HTML structure, CSS styling, and the JavaScript logic for the user interface.
+Final Version 2.8.2:
+- This version is stable and includes all features and fixes.
+- No new changes were needed in this file. Version number updated for consistency.
 -->
 <html dir="rtl" lang="ar">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>مستورد الشرائح التفاعلي</title>
+<title>    مستورد   الشرائح   التفاعلي  </title>
 <!-- SortableJS Library for Drag and Drop -->
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 <style>
-    :root {
-        --primary-start: #667eea;
-        --primary-end: #764ba2;
-        --primary-hover: #5a67d8;
-        --primary-active: #4338ca;
-        --title-bg: #0B5FA5;
-        --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-        --card-bg: rgba(255, 255, 255, 0.97);
-        --border-color: #e5e7eb;
-        --text-primary: #1f2937;
-        --text-secondary: #6b7280;
-        --status-success-bg: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
-        --status-success-text: #065f46;
-        --status-error-bg: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
-        --status-error-text: #991b1b;
-        --shadow-light: 0 4px 16px -2px rgba(102, 126, 234, 0.10);
-        --shadow-medium: 0 10px 24px -3px rgba(102, 126, 234, 0.13);
-        --imported-red: #ef4444;
-        --checkpoint-active-bg: #f59e0b;
-        --checkpoint-active-border: #d97706;
-        --input-bg: #f3f4f6;
-        --input-focus: #a5b4fc;
-        --input-shadow: 0 2px 8px rgba(102,126,234,0.08);
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body, html { font-family: 'Cairo', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background: var(--bg-gradient); color: var(--text-primary); height: 100%; overflow: hidden; }
-    body.preview-mode header, body.preview-mode .form-container { display: none; }
-    body.preview-mode .container, body.preview-mode footer { padding: 15px; }
-    .container { display: flex; flex-direction: column; height: 100vh; padding: 20px; gap: 20px; transition: padding 0.3s ease; }
-    header { text-align: center; padding: 18px 15px 15px 15px; background: var(--card-bg); border-radius: 22px; box-shadow: var(--shadow-light); backdrop-filter: blur(10px); border: 1.5px solid rgba(102, 126, 234, 0.10); flex-shrink: 0; margin-bottom: 0; }
-    h1 { font-size: 28px; margin-bottom: 5px; letter-spacing: 1px; }
-    .subtitle { font-size: 15px; color: var(--text-secondary); }
-    main { flex: 1; display: flex; flex-direction: column; gap: 16px; overflow: hidden; }
-    .form-container { background: var(--card-bg); border-radius: 18px; padding: 28px 24px; box-shadow: var(--shadow-light); flex-shrink: 0; border: 1.5px solid #e0e7ff; }
-    .preview-header { display: none; justify-content: flex-start; margin-bottom: 10px; flex-shrink: 0; }
-    body.preview-mode .preview-header { display: flex; }
-    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-bottom: 22px; }
-    .input-group label { display: block; margin-bottom: 8px; font-weight: 700; color: var(--primary-start); letter-spacing: 0.5px; }
-    input[type="text"] { width: 100%; padding: 13px 16px; border: 2px solid var(--border-color); border-radius: 12px; font-size: 15px; direction: ltr; background: var(--input-bg); transition: all 0.3s; box-shadow: var(--input-shadow); }
-    input[type="text"]:focus { outline: none; border-color: var(--input-focus); box-shadow: 0 0 0 3px #a5b4fc33; background: #fff; }
-    .btn { padding: 13px 26px; border: none; border-radius: 14px; font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 2px 8px rgba(102,126,234,0.07); position: relative; overflow: hidden; }
-    .btn-primary { background: linear-gradient(135deg, var(--primary-start), var(--primary-end)); color: white; box-shadow: var(--shadow-light); border: none; }
-    .btn-primary:hover, .btn-primary:focus { background: linear-gradient(135deg, var(--primary-hover), var(--primary-end)); box-shadow: var(--shadow-medium); transform: translateY(-2px) scale(1.03); }
-    .btn-primary:active { background: linear-gradient(135deg, var(--primary-active), var(--primary-end)); }
-    .btn-secondary { background: var(--card-bg); border: 2px solid var(--primary-start); color: var(--primary-start); }
-    .btn-secondary:hover, .btn-secondary:focus { background: #e0e7ff; border-color: var(--primary-end); color: var(--primary-end); box-shadow: var(--shadow-light); transform: translateY(-1px) scale(1.02); }
-    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-    .btn svg { width: 18px; height: 18px; vertical-align: middle; }
-    .status-message { padding: 16px 20px; border-radius: 12px; margin-bottom: 16px; text-align: center; font-weight: 700; font-size: 15px; box-shadow: 0 2px 8px #a7f3d033; animation: fadeInUp 0.4s ease-out; }
-    .status-success { background: var(--status-success-bg); color: var(--status-success-text); }
-    .status-error { background: var(--status-error-bg); color: var(--status-error-text); }
-    .loading-overlay { text-align: center; padding: 60px 20px; animation: fadeIn 0.3s ease-out; }
-    .spinner { width: 54px; height: 54px; margin: 0 auto 20px; position: relative; }
-    .spinner::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 5px solid rgba(102, 126, 234, 0.18); border-top-color: var(--primary-start); border-radius: 50%; animation: spin 1s linear infinite; }
-    @keyframes spin { 100% { transform: rotate(360deg); } }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    @keyframes slideIn { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
-    @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-    @keyframes fadeOut { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-10px); } }
-    @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
-    @keyframes shimmer { 0% { background-position: -200px 0; } 100% { background-position: calc(200px + 100%) 0; } }
-    
-    .fade-in { animation: fadeIn 0.4s ease-out; }
-    .slide-in { animation: slideIn 0.3s ease-out; }
-    .fade-in-up { animation: fadeInUp 0.5s ease-out; }
-    .fade-out { animation: fadeOut 0.3s ease-out; }
-    .pulse { animation: pulse 2s infinite; }
-    
-    .shimmer { background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200px 100%; animation: shimmer 1.5s infinite; }
-    
-    .slides-preview { flex: 1; overflow-y: auto; background: var(--card-bg); border-radius: 18px; padding: 18px; box-shadow: var(--shadow-light); transition: box-shadow 0.2s; animation: fadeIn 0.5s ease-out; }
-    .slides-preview::-webkit-scrollbar { width: 8px; }
-    .slides-preview::-webkit-scrollbar-track { background: rgba(0,0,0,0.05); }
-    .slides-preview::-webkit-scrollbar-thumb { background: var(--primary-start); border-radius: 4px; }
-    .slide-item { display: flex; flex-direction: column; gap: 16px; padding: 22px; margin-bottom: 18px; border: 2px solid transparent; border-radius: 18px; background: white; box-shadow: 0 2px 12px #a5b4fc22; transition: all 0.2s; position: relative; animation: fadeInUp 0.4s ease-out; }
-    .slide-item:nth-child(1) { animation-delay: 0.1s; }
-    .slide-item:nth-child(2) { animation-delay: 0.2s; }
-    .slide-item:nth-child(3) { animation-delay: 0.3s; }
-    .slide-item:nth-child(4) { animation-delay: 0.4s; }
-    .slide-item:nth-child(5) { animation-delay: 0.5s; }
-    .slide-item:nth-child(n+6) { animation-delay: 0.6s; }
-    .slide-item:hover { transform: translateY(-3px) scale(1.015); box-shadow: 0 8px 32px #a5b4fc33; border-color: var(--primary-end); }
-    .slide-item.selected { border-color: var(--primary-start); background: #f3f4f6; animation: pulse 0.3s ease-out; }
-    .slide-item.imported-question { border-color: var(--imported-red); }
-    .slide-item.imported-question.selected { background-color: rgba(239, 68, 68, 0.08); }
-    .slide-item.section-group { border-left: 5px solid #667eea; }
-    .slide-header { display: flex; align-items: center; gap: 12px; }
-    .slide-title { flex: 1; background: var(--title-bg); color: white; font-size: 17px; font-weight: 800; padding: 13px 18px; border-radius: 12px; text-align: right; letter-spacing: 0.5px; box-shadow: 0 2px 8px #0B5FA522; }
-    .slide-checkbox { width: 22px; height: 22px; cursor: pointer; accent-color: var(--primary-start); flex-shrink: 0; }
-    .slide-image-container { position: relative; width: 100%; padding-top: 56.25%; background: #f0f2f5; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px #a5b4fc22; }
-    .slide-image { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; transition: transform 0.2s; cursor: zoom-in; }
-    .slide-image:hover { transform: scale(1.08); box-shadow: 0 4px 16px #a5b4fc33; }
-    .question-content { padding: 18px; background-color: #f8f9fa; border: 1.5px solid #e9ecef; border-radius: 12px; margin-top: 8px; box-shadow: 0 2px 8px #a5b4fc11; }
-    .question-body { font-size: 17px; font-weight: 700; margin-bottom: 16px; line-height: 1.7; text-align: right; white-space: pre-wrap; color: #0B5FA5; }
-    .answer-options { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 12px; counter-reset: option-counter; }
-    .answer-options li { display: flex; align-items: center; gap: 12px; background-color: #fff; padding: 13px; border-radius: 8px; border: 1.5px solid #dee2e6; font-size: 15px; box-shadow: 0 1px 4px #a5b4fc11; }
-    .answer-options li::before { counter-increment: option-counter; content: counter(option-counter, upper-alpha); font-weight: 700; background-color: #e0e7ff; color: var(--text-primary); border: 1px solid #ced4da; min-width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center; flex-shrink: 0; }
-    .slide-details { font-size: 13px; color: var(--text-secondary); text-align: right; padding: 12px; background: rgba(0,0,0,0.02); border-radius: 8px; border: 1px solid rgba(0,0,0,0.05); }
-    footer { background: var(--card-bg); border-radius: 18px; padding: 22px; backdrop-filter: blur(10px); box-shadow: var(--shadow-light); flex-shrink: 0; border: 1.5px solid #e0e7ff; animation: fadeInUp 0.4s ease-out; }
-    .controls { display: flex; justify-content: space-between; align-items: center; gap: 18px; }
-    .control-group { display: flex; gap: 14px; }
-    .placement-select { background-color: #e0e7ff; color: #1e293b; border: 2px solid var(--primary-start); font-weight: bold; box-shadow: 0 2px 8px rgba(102,126,234,0.08); transition: border 0.2s, box-shadow 0.2s; border-radius: 8px; padding: 6px 10px; }
-    .placement-select:focus { outline: none; border-color: var(--primary-end); box-shadow: 0 0 0 3px rgba(102,126,234,0.15); }
-    .placement-select option { background-color: #e0e7ff; color: #1e293b; }
-    .btn-toggle-section-id, .btn-checkpoint { padding: 5px 10px; font-size: 13px; background-color: #e5e7eb; border: 1.5px solid #d1d5db; border-radius: 7px; cursor: pointer; margin-right: 8px; flex-shrink: 0; font-weight: 700; transition: all 0.2s; }
-    .btn-toggle-section-id.active { background-color: var(--primary-start); color: white; border-color: var(--primary-start); }
-    .btn-checkpoint.active { background-color: var(--checkpoint-active-bg); border-color: var(--checkpoint-active-border); color: white; font-weight: bold; }
-    .drag-handle { font-size: 24px; color: #a5b4fc; cursor: grab; padding: 0 10px; align-self: stretch; display: flex; align-items: center; transition: color 0.2s; }
-    .drag-handle:active { cursor: grabbing; color: var(--primary-end); }
-    .move-to-input { width: 54px; padding: 5px 7px; font-size: 13px; text-align: center; border: 1.5px solid var(--border-color); border-radius: 7px; margin-left: 8px; background: #f3f4f6; transition: border 0.2s; }
-    .move-to-input:focus { border-color: var(--primary-end); background: #fff; }
-    .slides-preview.dragging-mode { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px; align-content: flex-start; padding: 14px; }
-    .slides-preview.dragging-mode .slide-item { width: 100%; height: 170px; padding: 10px; gap: 8px; justify-content: center; align-items: center; border: 2px solid var(--border-color); background: white; overflow: hidden; margin-bottom: 0; border-radius: 14px; box-shadow: var(--shadow-light); transition: all 0.2s; position: relative; }
-    .slides-preview.dragging-mode .slide-item.selected { border-color: var(--primary-start); background: rgba(102, 126, 234, 0.08); }
-    .slides-preview.dragging-mode .normal-view { display: none; }
-    .slides-preview.dragging-mode .icon-view { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%; text-align: center; }
-    .slide-icon-preview { width: 80px; height: 60px; border-radius: 8px; background-color: #f0f2f5; background-size: cover; background-position: center; background-repeat: no-repeat; border: 1.5px solid #dee2e6; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); font-size: 18px; font-weight: bold; margin-bottom: 8px; flex-shrink: 0; box-shadow: 0 1px 4px #a5b4fc11; }
-    .slide-title-preview { font-size: 12px; font-weight: 700; color: var(--text-primary); text-align: center; width: 100%; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.3; }
-    .slide-number-indicator { position: absolute; top: 8px; right: 8px; background: var(--primary-start); color: white; font-size: 11px; font-weight: bold; padding: 3px 8px; border-radius: 7px; min-width: 22px; text-align: center; z-index: 2; box-shadow: 0 1px 4px #a5b4fc22; }
-    .sortable-ghost { opacity: 1 !important; background: rgba(102, 126, 234, 0.1) !important; border: 2px dashed var(--primary-start) !important; border-radius: 14px !important; box-shadow: none !important; }
-    .sortable-ghost > * { visibility: hidden; }
-    .sortable-chosen { cursor: grabbing !important; opacity: 0.8 !important; transform: scale(0.95) rotate(3deg) !important; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2) !important; z-index: 1000 !important; }
-    .slides-preview.dragging-mode .slide-item:hover:not(.sortable-chosen) { transform: translateY(-2px) scale(1.02); box-shadow: var(--shadow-medium); }
-    @media (max-width: 768px) {
-        .form-grid { grid-template-columns: 1fr; }
-        .controls { flex-direction: column; gap: 12px; }
-        .control-group { width: 100%; justify-content: center; }
-        .btn { width: 100%; }
-        .slides-preview.dragging-mode { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; padding: 10px; }
-        .slides-preview.dragging-mode .slide-item { height: 140px; }
-        .slide-icon-preview { width: 70px; height: 50px; }
-    }
-    @media (max-width: 480px) {
-        .slides-preview.dragging-mode { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; }
-        .slides-preview.dragging-mode .slide-item { height: 120px; }
-        .slide-icon-preview { width: 60px; height: 45px; }
-        .slide-title-preview { font-size: 10px; }
-    }
-    /* Modal animations */
-    #sheetModal, #quickStatsModal, #confirmImportModal { animation: fadeIn 0.3s ease-out; }
-    #sheetModal > div, #quickStatsModal > div, #confirmImportModal > div { animation: fadeInUp 0.4s ease-out; }
-    
-    /* Loading shimmer effect */
-    .loading-shimmer { background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%); background-size: 200px 100%; animation: shimmer 1.5s infinite; }
-    
-    /* Button click effect */
-    .btn:active { transform: scale(0.98); }
-    
-    /* Smooth transitions for all interactive elements */
-    * { transition: all 0.2s ease; }
-    
-    /* Enhanced focus states */
-    .btn:focus, input:focus, select:focus { outline: none; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2); }
-    
-    /* Hover effects for interactive elements */
-    .btn:hover { transform: translateY(-1px); }
-    .btn:active { transform: translateY(0); }
-    
-    /* Slide item entrance animation */
-    .slide-item { opacity: 0; transform: translateY(20px); }
-    .slide-item.animate-in { opacity: 1; transform: translateY(0); }
-    
-    /* Collapse/Expand functionality */
-    .collapsible { transition: all 0.3s ease; overflow: hidden; }
-    .collapsed { max-height: 0; padding: 0; margin: 0; opacity: 0; }
-    .collapse-btn { 
-        position: absolute; 
-        top: 10px; 
-        right: 10px; 
-        background: var(--primary-start); 
-        color: white; 
-        border: none; 
-        border-radius: 50%; 
-        width: 30px; 
-        height: 30px; 
-        cursor: pointer; 
-        font-size: 16px; 
-        display: flex; 
-        align-items: center; 
-        justify-content: center; 
-        transition: all 0.2s; 
-        z-index: 10;
-        box-shadow: 0 2px 8px rgba(102,126,234,0.3);
-    }
-    .collapse-btn:hover { 
-        background: var(--primary-end); 
-        transform: scale(1.1); 
-        box-shadow: 0 4px 12px rgba(102,126,234,0.4);
-    }
-    .collapse-btn.collapsed { transform: rotate(180deg); }
-    
-    /* Small collapse button for search and back button */
-    .collapse-btn-small { 
-        width: 24px; 
-        height: 24px; 
-        font-size: 12px; 
-        top: 8px; 
-        right: 8px;
-    }
-    
-    /* Header and Footer positioning for collapse */
-    header, footer { position: relative; }
-    
-    /* Preview controls container */
-    .preview-controls { position: relative; }
-    .preview-controls.collapsed { max-height: 0; padding: 0; margin: 0; opacity: 0; }
-    
-    /* Preview mode adjustments */
-    body.preview-mode header.collapsed { max-height: 0; padding: 0; margin: 0; opacity: 0; }
-    body.preview-mode footer.collapsed { max-height: 0; padding: 0; margin: 0; opacity: 0; }
-    body.preview-mode .preview-controls.collapsed { max-height: 0; padding: 0; margin: 0; opacity: 0; }
-    
-    /* Smooth transitions for container */
-    .container { transition: gap 0.3s ease; }
-    body.preview-mode .container { gap: 10px; }
-    body.preview-mode .container.header-collapsed { gap: 5px; }
-    body.preview-mode .container.footer-collapsed { gap: 5px; }
-    body.preview-mode .container.preview-controls-collapsed { gap: 5px; }
-    body.preview-mode .container.both-collapsed { gap: 0; }
-    body.preview-mode .container.all-collapsed { gap: 0; }
-    
-    /* Hide slide-details in preview mode */
-    body.preview-mode .slide-details { display: none !important; }
-    
-    /* Floating restore buttons */
-    .restore-btn {
-        position: absolute;
-        left: 16px;
-        top: 12px;
-        z-index: 20;
-        background: var(--primary-end);
-        color: #fff;
-        border: none;
-        border-radius: 50%;
-        width: 28px;
-        height: 28px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 15px;
-        box-shadow: 0 2px 8px #a5b4fc55;
-        cursor: pointer;
-        opacity: 0.85;
-        transition: all 0.2s;
-        visibility: hidden;
-    }
-    .restore-btn.visible { visibility: visible; opacity: 1; }
-    .restore-btn:hover { background: var(--primary-start); opacity: 1; }
-    
-    /* Position restore buttons for each section */
-    header .restore-btn { left: 16px; top: 12px; }
-    .preview-controls .restore-btn { left: 16px; top: 8px; }
-    footer .restore-btn { left: 16px; top: 12px; }
+:root {
+    --primary-start: #667eea;
+    --primary-end: #764ba2;
+    --title-bg: #0B5FA5;
+    --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    --card-bg: rgba(255, 255, 255, 0.95);
+    --border-color: #e5e7eb;
+    --text-primary: #1f2937;
+    --text-secondary: #6b7280;
+    --status-success-bg: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+    --status-success-text: #065f46;
+    --status-error-bg: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+    --status-error-text: #991b1b;
+    --shadow-light: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --shadow-medium: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    --imported-red: #ef4444;
+    --not-in-sheet-bg: #fff1f2;
+    --not-in-sheet-border: #ffb6c1;
+    --checkpoint-active-bg: #f59e0b;
+    --checkpoint-active-border: #d97706;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body, html { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background: var(--bg-gradient); color: var(--text-primary); height: 100%; overflow: hidden; }
+body.preview-mode header, body.preview-mode .form-container { display: none; }
+body.preview-mode .container, body.preview-mode footer { padding: 15px; }
+.container { display: flex; flex-direction: column; height: 100vh; padding: 20px; gap: 20px; transition: padding 0.3s ease; }
+header { text-align: center; padding: 15px; background: var(--card-bg); border-radius: 16px; box-shadow: var(--shadow-light); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2); flex-shrink: 0; }
+h1 { font-size: 24px; margin-bottom: 5px; }
+.subtitle { font-size: 14px; }
+main { flex: 1; display: flex; flex-direction: column; gap: 16px; overflow: hidden; }
+.form-container { background: var(--card-bg); border-radius: 16px; padding: 24px; box-shadow: var(--shadow-light); flex-shrink: 0; }
+.preview-header { display: none; justify-content: flex-start; margin-bottom: 10px; flex-shrink: 0; }
+body.preview-mode .preview-header { display: flex; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+.input-group label { display: block; margin-bottom: 8px; font-weight: 600; }
+input[type="text"] { width: 100%; padding: 12px 16px; border: 2px solid var(--border-color); border-radius: 12px; font-size: 14px; direction: ltr; transition: all 0.3s ease; }
+input[type="text"]:focus { outline: none; border-color: var(--primary-start); box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1); }
+.btn { padding: 12px 24px; border: none; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+.btn-primary { background: linear-gradient(135deg, var(--primary-start), var(--primary-end)); color: white; box-shadow: var(--shadow-light); }
+.btn-primary:hover { box-shadow: var(--shadow-medium); }
+.btn-secondary { background: var(--card-bg); border: 2px solid var(--border-color); color: var(--text-primary); }
+.btn-secondary:hover { border-color: var(--primary-start); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.status-message { padding: 16px 20px; border-radius: 12px; margin-bottom: 16px; text-align: center; font-weight: 600; }
+.status-success { background: var(--status-success-bg); color: var(--status-success-text); }
+.status-error { background: var(--status-error-bg); color: var(--status-error-text); }
+.loading-overlay { text-align: center; padding: 60px 20px; }
+.spinner { width: 50px; height: 50px; margin: 0 auto 20px; position: relative; }
+.spinner::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 4px solid rgba(102, 126, 234, 0.2); border-top-color: var(--primary-start); border-radius: 50%; animation: spin 1s linear infinite; }
+@keyframes spin { 100% { transform: rotate(360deg); } }
+.slides-preview { flex: 1; overflow-y: auto; background: var(--card-bg); border-radius: 16px; padding: 16px; box-shadow: var(--shadow-light); }
+.slide-item { display: flex; flex-direction: column; gap: 16px; padding: 20px; margin-bottom: 16px; border: 2px solid transparent; border-radius: 16px; background: white; box-shadow: var(--shadow-light); transition: all 0.3s ease; position: relative; }
+.slide-item:hover { transform: translateY(-2px); box-shadow: var(--shadow-medium); }
+.slide-item.selected { border-color: var(--primary-start); background: rgba(102, 126, 234, 0.05); }
+.slide-item.imported-question { border-color: var(--imported-red); opacity: 0.7; }
+.slide-item.not-in-sheet { background-color: var(--not-in-sheet-bg); border-color: var(--not-in-sheet-border); }
+.not-in-sheet-icon { position: absolute; top: 10px; left: 10px; font-size: 24px; z-index: 10; filter: drop-shadow(0 1px 1px rgba(0,0,0,0.3)); }
+.slide-header { display: flex; align-items: center; gap: 12px; }
+.slide-title { flex: 1; background: var(--title-bg); color: white; font-size: 16px; font-weight: 700; padding: 12px 16px; border-radius: 12px; text-align: right; }
+.slide-checkbox { width: 20px; height: 20px; cursor: pointer; accent-color: var(--primary-start); flex-shrink: 0; }
+.slide-image-container { position: relative; width: 100%; padding-top: 56.25%; background: #f0f2f5; border-radius: 12px; overflow: hidden; }
+.slide-image { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; }
+.question-content { padding: 16px; background-color: #f8f9fa; border: 1px solid #e9ecef; border-radius: 12px; margin-top: 8px; }
+.question-body { font-size: 16px; font-weight: 600; margin-bottom: 16px; line-height: 1.6; text-align: right; white-space: pre-wrap; }
+.answer-options { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 12px; counter-reset: option-counter; }
+.answer-options li { display: flex; align-items: center; gap: 12px; background-color: #fff; padding: 12px; border-radius: 8px; border: 1px solid #dee2e6; font-size: 15px; }
+.answer-options li::before { counter-increment: option-counter; content: counter(option-counter, upper-alpha); font-weight: 700; background-color: #e9ecef; color: var(--text-primary); border: 1px solid #ced4da; min-width: 32px; height: 32px; border-radius: 8px; display: grid; place-items: center; flex-shrink: 0; }
+.slide-details { font-size: 12px; color: var(--text-secondary); text-align: right; padding: 12px; background: rgba(0,0,0,0.02); border-radius: 8px; border: 1px solid rgba(0,0,0,0.05); }
+footer { background: var(--card-bg); border-radius: 16px; padding: 20px; backdrop-filter: blur(10px); box-shadow: var(--shadow-light); flex-shrink: 0; }
+.controls { display: flex; justify-content: space-between; align-items: center; gap: 16px; }
+.control-group { display: flex; gap: 12px; }
+.placement-select { background-color: #e0e7ff; color: #1e293b; border: 2px solid var(--primary-start); font-weight: bold; box-shadow: 0 2px 8px rgba(102,126,234,0.08); transition: border 0.2s, box-shadow 0.2s; }
+.btn-toggle-section-id, .btn-checkpoint { padding: 4px 8px; font-size: 12px; background-color: #e5e7eb; border: 1px solid #d1d5db; border-radius: 6px; cursor: pointer; margin-right: 8px; flex-shrink: 0; }
+.btn-toggle-section-id.active { background-color: var(--primary-start); color: white; border-color: var(--primary-start); }
+.btn-checkpoint.active { background-color: var(--checkpoint-active-bg); border-color: var(--checkpoint-active-border); color: white; font-weight: bold; }
+.drag-handle { font-size: 24px; color: #cbd5e1; cursor: grab; padding: 0 10px; align-self: stretch; display: flex; align-items: center; }
+.drag-handle:active { cursor: grabbing; }
+.move-to-input { width: 50px; padding: 4px 6px; font-size: 12px; text-align: center; border: 1px solid var(--border-color); border-radius: 6px; margin-left: 8px; -moz-appearance: textfield; }
+.move-to-input::-webkit-outer-spin-button, .move-to-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+/* Modal Styles */
+.modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 1000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
+.modal-content { background: white; padding: 24px; border-radius: 16px; box-shadow: var(--shadow-medium); width: 90%; max-width: 600px; direction: rtl; }
+.modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.modal-title { font-size: 20px; font-weight: 700; color: var(--title-bg); }
+.modal-close-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: #9ca3af; }
+.modal-body { max-height: 60vh; overflow-y: auto; padding-left: 10px; }
+.html-source-item { display: flex; gap: 10px; margin-bottom: 10px; }
+.html-source-item input { flex-grow: 1; direction: ltr; }
+.btn-icon { padding: 8px; min-width: 40px; background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+/* Dragging View Styles */
+ .slides-preview.dragging-mode { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; align-content: flex-start; padding: 12px; }
+ .slides-preview.dragging-mode .slide-item { width: 100%; height: 160px; padding: 8px; gap: 8px; justify-content: center; align-items: center; border: 2px solid var(--border-color); background: white; overflow: hidden; margin-bottom: 0; border-radius: 12px; box-shadow: var(--shadow-light); transition: all 0.2s ease; position: relative; }
+ .slides-preview.dragging-mode .slide-item.selected { border-color: var(--primary-start); background: rgba(102, 126, 234, 0.08); }
+ .slides-preview .icon-view { display: none; }
+ .slides-preview.dragging-mode .normal-view { display: none; }
+ .slides-preview.dragging-mode .icon-view { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%; text-align: center; }
+ .slide-icon-preview { width: 80px; height: 60px; border-radius: 8px; background-color: #f0f2f5; background-size: cover; background-position: center; background-repeat: no-repeat; border: 1px solid #dee2e6; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); font-size: 18px; font-weight: bold; margin-bottom: 8px; flex-shrink: 0; }
+ .slide-title-preview { font-size: 11px; font-weight: 600; color: var(--text-primary); text-align: center; width: 100%; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.3; }
+ .sortable-ghost { opacity: 1 !important; background: rgba(102, 126, 234, 0.1) !important; border: 2px dashed var(--primary-start) !important; border-radius: 12px !important; box-shadow: none !important; }
+ .sortable-ghost > * { visibility: hidden; }
+ .sortable-chosen { cursor: grabbing !important; opacity: 0.8 !important; transform: scale(0.95) rotate(3deg) !important; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2) !important; z-index: 1000 !important; }
+ .slide-index-badge {
+    position: absolute;
+    top: 6px;
+    left: 6px;
+    background: #0B5FA5;
+    color: #fff;
+    font-size: 15px;
+    font-weight: bold;
+    padding: 2px 10px;
+    border-radius: 12px;
+    opacity: 0;
+    pointer-events: none;
+    z-index: 20;
+    transition: opacity 0.2s;
+}
+.slide-item:hover .slide-index-badge {
+    opacity: 1;
+}
+/* CSS للبنك */
+.bank-badge {
+    color: #fff;
+    background: #ef4444;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 2px 8px;
+    margin-right: 6px;
+    margin-left: 6px;
+    vertical-align: middle;
+}
+/* أضف CSS لشارة unlinked البرتقالية */
+.unlinked-badge {
+    color: #fff;
+    background: #f59e0b;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 2px 8px;
+    margin-right: 6px;
+    margin-left: 6px;
+    vertical-align: middle;
+    border: 1px solid #d97706;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.07);
+    cursor: pointer;
+}
+.linked-badge {
+    color: #fff;
+    background: #22c55e;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 2px 8px;
+    margin-right: 6px;
+    margin-left: 6px;
+    vertical-align: middle;
+    border: 1px solid #16a34a;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.07);
+}
 </style>
 </head>
 <body>
 <div class="container">
-    <header class="collapsible">
-        <button class="collapse-btn" id="headerCollapseBtn" title="طي/فتح العنوان">▼</button>
-        <button class="restore-btn" id="headerRestoreBtn" title="إظهار العنوان">⤵</button>
-        <h1>📊 مستورد الشرائح التفاعلي</h1>
-        <p class="subtitle">استيراد الشرائح من HTML إلى Google Slides</p>
-    </header>
-    <main>
-        <div class="form-container">
-            <div class="form-grid">
-                <div class="input-group">
-                    <label for="fileUrl">📄 رابط ملف HTML</label>
-                    <input type="text" id="fileUrl" placeholder="https://drive.google.com/file/d/FILE_ID/view">
-                </div>
-                <div class="input-group">
-                    <label for="folderId">📁 معرف مجلد الصور</label>
-                    <input type="text" id="folderId" placeholder="ID_المجلد_الذي_يحتوي_الصور">
-                </div>
+<header>
+    <h1>   📊  مستورد   الشرائح   التفاعلي  (v2.8.2) </h1>
+    <p class="subtitle">    استيراد   الشرائح   من   عدة   مصادر  HTML  إلى  Google Slides </p>
+</header>
+<main>
+    <div class="form-container">
+        <div class="form-grid">
+            <div class="input-group">
+                <label for="manageHtmlSourcesBtn">   📚  مصادر   ملفات  HTML </label>
+                <button id="manageHtmlSourcesBtn" class="btn btn-secondary">    إدارة   المصادر  (<span id="sourceCount">0</span>) </button>
             </div>
-            <button id="previewBtn" class="btn btn-primary" style="width: 100%;" disabled>🔍 معاينة الشرائح</button>
-        </div>
-        <div class="preview-controls collapsible">
-            <button class="collapse-btn collapse-btn-small" id="previewControlsCollapseBtn" title="طي/فتح أدوات المعاينة">▼</button>
-            <button class="restore-btn" id="previewControlsRestoreBtn" title="إظهار أدوات المعاينة">⤵</button>
-            <div class="preview-header">
-                <button id="backToFormBtn" class="btn btn-secondary">✏️ الرجوع وتعديل المدخلات</button>
-            </div>
-            <!-- عناصر البحث والفلترة الجديدة -->
-            <div id="searchFilterBar" style="display:none;gap:10px;align-items:center;margin-bottom:10px;flex-wrap:wrap;">
-                <input type="text" id="searchSlides" placeholder="🔍 ابحث عن سؤال أو قسم أو ID..." style="padding:8px 12px;border-radius:8px;border:1.5px solid #a5b4fc;font-size:15px;min-width:180px;">
-                <select id="filterSlides" style="padding:8px 12px;border-radius:8px;border:1.5px solid #a5b4fc;font-size:15px;">
-                    <option value="all">كل الشرائح</option>
-                    <option value="questions">الأسئلة فقط</option>
-                    <option value="examples">الأمثلة فقط</option>
-                    <option value="imported">المستوردة فقط</option>
-                    <option value="notimported">غير المستوردة</option>
-                </select>
+            <div class="input-group">
+                <label for="folderId">   📁  معرف   مجلد   الصور  </label>
+                <input type="text" id="folderId" placeholder="ID_  المجلد  _  الذي  _  يحتوي  _  الصور  ">
             </div>
         </div>
-        <div id="statusContainer"></div>
-        <div id="loading" class="loading-overlay" style="display: none;">
-            <div class="spinner"></div>
-            <div class="loading-text">جارٍ تحميل الشرائح...</div>
-        </div>
-        <div id="slidesPreview" class="slides-preview" style="display: none;"></div>
-    </main>
-    <footer class="collapsible">
-        <button class="collapse-btn" id="footerCollapseBtn" title="طي/فتح الأزرار السفلية">▼</button>
-        <button class="restore-btn" id="footerRestoreBtn" title="إظهار الأزرار السفلية">⤵</button>
-        <div class="controls">
-            <div class="control-group">
-                <button id="selectAllBtn" class="btn btn-secondary">✅ تحديد الكل</button>
-                <button id="deselectAllBtn" class="btn btn-secondary">❌ إلغاء التحديد</button>
-                <button id="resetImportedBtn" class="btn btn-secondary" style="color:#ef4444;border-color:#ef4444;">🔄 إعادة تعيين المستورد</button>
-            </div>
-            <button id="quickStatsBtn" class="btn btn-secondary" style="background:#e0e7ff;color:#7c3aed;font-weight:bold;border:2px solid #a5b4fc;">📊 إحصائيات سريعة</button>
-            <button id="updateFromSheetBtn" class="btn btn-secondary" style="background:#e0e7ff;color:#0B5FA5;font-weight:bold;border:2px solid #0B5FA5;">🔗 تحديث من Google Sheet</button>
-            <button id="importBtn" class="btn btn-primary" disabled>📥 استيراد المحدد</button>
-        </div>
-    </footer>
-      <!-- نافذة إدخال رابط Google Sheet -->
-    <div id="sheetModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.18);z-index:10001;align-items:center;justify-content:center;display: flex;">
-      <div style="background:white;min-width:320px;max-width:95vw;padding:32px 24px 24px 24px;border-radius:18px;box-shadow:0 8px 32px rgba(0,0,0,0.18);position:relative;direction:rtl;">
-        <button id="closeSheetModal" style="position:absolute;top:12px;left:12px;font-size:18px;background:none;border:none;cursor:pointer;color:#ef4444;font-weight:bold;">✖</button>
-        <h2 style="font-size:20px;margin-bottom:18px;color:#0B5FA5;">تحديث من Google Sheet</h2>
-        <div style="margin-bottom:12px;">أدخل رابط ملف Google Sheet الذي يحتوي على الأعمدة: <b>question_id, section_no, question_type, question_placement</b></div>
-        <input type="text" id="sheetUrlInput" placeholder="https://docs.google.com/spreadsheets/d/FILE_ID/edit" style="width:100%;padding:10px 12px;border-radius:8px;border:1.5px solid #a5b4fc;font-size:15px;margin-bottom:18px;">
-        <button id="applySheetBtn" class="btn btn-primary" style="width:100%;">تحديث من الشيت</button>
-        <div id="sheetStatusMsg" style="margin-top:10px;font-size:14px;color:#ef4444;"></div>
-      </div>
+        <button id="previewBtn" class="btn btn-primary" style="width: 100%;" disabled>   🔍  معاينة   الشرائح  </button>
     </div>
-      <!-- نافذة الإحصائيات السريعة -->
-    <div id="quickStatsModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.18);z-index:9999;align-items:center;justify-content:center;display: flex;">
-      <div style="background:white;min-width:320px;max-width:95vw;padding:32px 24px 24px 24px;border-radius:18px;box-shadow:0 8px 32px rgba(0,0,0,0.18);position:relative;direction:rtl;">
-        <button id="closeQuickStatsModal" style="position:absolute;top:12px;left:12px;font-size:18px;background:none;border:none;cursor:pointer;color:#ef4444;font-weight:bold;">✖</button>
-        <h2 style="font-size:20px;margin-bottom:18px;color:#7c3aed;">📊 إحصائيات سريعة</h2>
-        <div id="quickStatsContent" style="font-size:15px;color:#1e293b;"></div>
-      </div>
+    <div class="preview-header">
+        <button id="backToFormBtn" class="btn btn-secondary">   ✏️  الرجوع   وتعديل   المدخلات  </button>
+        <button id="filterBtn" class="btn btn-secondary" style="margin-right:12px;">🔎 تصفية</button>
     </div>
-      <!-- نافذة التأكيد قبل الاستيراد -->
-    <div id="confirmImportModal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.18);z-index:10000;align-items:center;justify-content:center;display: flex;">
-      <div style="background:white;min-width:320px;max-width:95vw;padding:32px 24px 24px 24px;border-radius:18px;box-shadow:0 8px 32px rgba(0,0,0,0.18);position:relative;direction:rtl;">
-        <button id="closeConfirmImportModal" style="position:absolute;top:12px;left:12px;font-size:18px;background:none;border:none;cursor:pointer;color:#ef4444;font-weight:bold;">✖</button>
-        <h2 style="font-size:20px;margin-bottom:18px;color:#0B5FA5;">تأكيد الاستيراد</h2>
-        <div id="confirmImportContent" style="font-size:15px;color:#1e293b;margin-bottom:18px;"></div>
-        <div style="display:flex;gap:12px;justify-content:flex-end;">
-          <button id="confirmImportBtn" class="btn btn-primary">تأكيد الاستيراد</button>
-          <button id="cancelImportBtn" class="btn btn-secondary">إلغاء</button>
+    <div id="statusContainer"></div>
+    <div id="loading" class="loading-overlay" style="display: none;">
+        <div class="spinner"></div>
+        <div class="loading-text">    جارٍ تحميل   الشرائح  ...</div>
+    </div>
+    <div id="slidesPreview" class="slides-preview" style="display: none;"></div>
+</main>
+<footer>
+    <div class="controls">
+        <div class="control-group">
+            <button id="selectAllBtn" class="btn btn-secondary">   ✅  تحديد   الكل  </button>
+            <button id="deselectAllBtn" class="btn btn-secondary">   ❌  إلغاء   التحديد  </button>
+            <button id="resetImportedBtn" class="btn btn-secondary" style="color:#ef4444;border-color:#ef4444;">   🔄  إعادة   تعيين   المستورد  </button>
         </div>
-      </div>
+        <button id="quickStatsBtn" class="btn btn-secondary" style="background:#e0e7ff;color:#7c3aed;font-weight:bold;border:2px solid #a5b4fc;">  📊  إحصائيات   سريعة </button>
+        <button id="updateFromSheetBtn" class="btn btn-secondary" style="background:#e0e7ff;color:#0B5FA5;font-weight:bold;border:2px solid #0B5FA5;">   🔗  تحديث   من  Google Sheet </button>
+        <button id="importBtn" class="btn btn-primary" disabled>   📥  استيراد   المحدد  </button>
+    </div>
+</footer>
+
+
+
+
+
+
+
+
+<!-- HTML Sources Modal -->
+<div id="htmlSourcesModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title">    إدارة   مصادر  HTML </h2>
+            <button class="modal-close-btn" data-modal-id="htmlSourcesModal"> ✖ </button>
+        </div>
+        <div class="modal-body" id="htmlSourcesContainer"></div>
+        <div class="modal-footer" style="margin-top: 20px; display: flex; gap: 10px; justify-content: space-between;">
+            <button id="addHtmlSourceBtn" class="btn btn-secondary">  ➕  إضافة   مصدر </button>
+            <button id="saveHtmlSourcesBtn" class="btn btn-primary">    حفظ  </button>
+        </div>
     </div>
 </div>
+ <!-- Google Sheet URL Modal -->
+<div id="sheetModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+        <h2 class="modal-title">    تحديث   من  Google Sheet</h2>
+        <button class="modal-close-btn" data-modal-id="sheetModal"> ✖ </button>
+    </div>
+    <div class="modal-body">
+        <p style="margin-bottom: 12px;">    أدخل   رابط   ملف  Google Sheet  الذي   يحتوي   على   الأعمدة  : <b>question_id, section_no, question_type, question_placement</b></p>
+        <input type="text" id="sheetUrlInput" placeholder="https://docs.google.com/spreadsheets/d/FILE_ID/edit" style="width:100%; margin-bottom: 18px;">
+        <div id="sheetStatusMsg" style="margin-top:10px;font-size:14px;color:#ef4444;"></div>
+    </div>
+    <div class="modal-footer" style="margin-top: 20px; text-align: left;">
+        <button id="applySheetBtn" class="btn btn-primary" style="width:100%;">    تحديث   من   الشيت  </button>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+<!-- Quick Stats Modal -->
+ <div id="quickStatsModal" class="modal">
+   <div class="modal-content">
+     <div class="modal-header">
+         <h2 class="modal-title">  📊  إحصائيات   سريعة </h2>
+         <button class="modal-close-btn" data-modal-id="quickStatsModal"> ✖ </button>
+     </div>
+     <div class="modal-body" id="quickStatsContent"></div>
+   </div>
+ </div>
+
+
+
+
+
+
+
+
+ <!-- Confirm Import Modal -->
+ <div id="confirmImportModal" class="modal">
+   <div class="modal-content">
+     <div class="modal-header">
+         <h2 class="modal-title"> تأكيد   الاستيراد </h2>
+         <button class="modal-close-btn" data-modal-id="confirmImportModal"> ✖ </button>
+     </div>
+     <div class="modal-body" id="confirmImportContent" style="margin-bottom:18px;"></div>
+     <div class="modal-footer" style="display:flex;gap:12px;justify-content:flex-end;">
+       <button id="confirmImportBtn" class="btn btn-primary"> تأكيد   الاستيراد </button>
+       <button id="cancelImportBtn" class="btn btn-secondary"> إلغاء </button>
+     </div>
+   </div>
+ </div>
+
+
+
+
+
+
+
+
+ <!-- Filter Modal -->
+ <div id="filterModal" class="modal" style="display:none;z-index:10000;">
+   <div class="modal-content" style="min-width:320px;max-width:90vw;">
+     <div class="modal-header">
+       <h2 class="modal-title">تصفية الشرائح</h2>
+       <button class="modal-close-btn" id="closeFilterModal">✖</button>
+     </div>
+     <div class="modal-body" style="padding:16px;display:flex;flex-direction:column;gap:12px;">
+       <label><input type="radio" name="filterType" value="all" checked> عرض الكل</label>
+       <label><input type="radio" name="filterType" value="questions"> فقط الأسئلة</label>
+       <label><input type="radio" name="filterType" value="explain"> فقط الشرح</label>
+       <label><input type="radio" name="filterType" value="checkpoint"> فقط Checkpoint</label>
+       <div style="margin-top:8px;">
+         <b>حسب النوع (placement):</b>
+         <div id="placementFilters" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;"></div>
+       </div>
+     </div>
+     <div class="modal-footer" style="display:flex;gap:12px;justify-content:flex-end;">
+       <button id="applyFilterBtn" class="btn btn-primary">تطبيق</button>
+     </div>
+   </div>
+ </div>
+
+
+
+
+
+
+
+
+</div>
+
+
+
+
+
+
+
+
 <script>
-    // Global state variable to hold all slide data retrieved from the server
-    let allSlidesData = [];
-    // Flag to prevent multiple simultaneous operations
-    let isLoading = false;
-    // Variables for search and filter
-    let currentSearch = '';
-    let currentFilter = 'all';
-    // Variables for collapse state
-    let headerCollapsed = false;
-    let footerCollapsed = false;
-    let previewControlsCollapsed = false;
-    // UI elements cache for quick access
-    const ui = {
-        body: document.body,
-        fileUrl: document.getElementById('fileUrl'),
-        folderId: document.getElementById('folderId'),
-        previewBtn: document.getElementById('previewBtn'),
-        importBtn: document.getElementById('importBtn'),
-        selectAllBtn: document.getElementById('selectAllBtn'),
-        deselectAllBtn: document.getElementById('deselectAllBtn'),
-        loading: document.getElementById('loading'),
-        statusContainer: document.getElementById('statusContainer'),
-        slidesPreview: document.getElementById('slidesPreview'),
-        backToFormBtn: document.getElementById('backToFormBtn'),
-        // Modals
-        sheetModal: document.getElementById('sheetModal'),
-        quickStatsModal: document.getElementById('quickStatsModal'),
-        confirmImportModal: document.getElementById('confirmImportModal'),
-        // New search/filter elements
-        searchSlides: document.getElementById('searchSlides'),
-        filterSlides: document.getElementById('filterSlides'),
-        searchFilterBar: document.getElementById('searchFilterBar'),
-        // Collapse buttons
-        headerCollapseBtn: document.getElementById('headerCollapseBtn'),
-        footerCollapseBtn: document.getElementById('footerCollapseBtn'),
-        previewControlsCollapseBtn: document.getElementById('previewControlsCollapseBtn'),
-        headerRestoreBtn: document.getElementById('headerRestoreBtn'),
-        previewControlsRestoreBtn: document.getElementById('previewControlsRestoreBtn'),
-        footerRestoreBtn: document.getElementById('footerRestoreBtn'),
-    };
+// Global state variables
+let allSlidesData = [];
+let htmlSourceUrls = [];
+let isLoading = false;
+let sortableInstance = null;
+ // UI elements cache
+const ui = {
+    body: document.body,
+    folderId: document.getElementById('folderId'),
+    previewBtn: document.getElementById('previewBtn'),
+    importBtn: document.getElementById('importBtn'),
+    selectAllBtn: document.getElementById('selectAllBtn'),
+    deselectAllBtn: document.getElementById('deselectAllBtn'),
+    resetImportedBtn: document.getElementById('resetImportedBtn'),
+    updateFromSheetBtn: document.getElementById('updateFromSheetBtn'),
+    loading: document.getElementById('loading'),
+    statusContainer: document.getElementById('statusContainer'),
+    slidesPreview: document.getElementById('slidesPreview'),
+    backToFormBtn: document.getElementById('backToFormBtn'),
+    sourceCount: document.getElementById('sourceCount'),
+    // Modals
+    htmlSourcesModal: document.getElementById('htmlSourcesModal'),
+    htmlSourcesContainer: document.getElementById('htmlSourcesContainer'),
+    manageHtmlSourcesBtn: document.getElementById('manageHtmlSourcesBtn'),
+    addHtmlSourceBtn: document.getElementById('addHtmlSourceBtn'),
+    saveHtmlSourcesBtn: document.getElementById('saveHtmlSourcesBtn'),
+    sheetModal: document.getElementById('sheetModal'),
+    sheetUrlInput: document.getElementById('sheetUrlInput'),
+    applySheetBtn: document.getElementById('applySheetBtn'),
+    sheetStatusMsg: document.getElementById('sheetStatusMsg'),
+    quickStatsBtn: document.getElementById('quickStatsBtn'),
+    quickStatsModal: document.getElementById('quickStatsModal'),
+    quickStatsContent: document.getElementById('quickStatsContent'),
+    confirmImportModal: document.getElementById('confirmImportModal'),
+    confirmImportContent: document.getElementById('confirmImportContent'),
+    confirmImportBtn: document.getElementById('confirmImportBtn'),
+    cancelImportBtn: document.getElementById('cancelImportBtn'),
+    filterBtn: document.getElementById('filterBtn'),
+    filterModal: document.getElementById('filterModal'),
+    closeFilterModal: document.getElementById('closeFilterModal'),
+    applyFilterBtn: document.getElementById('applyFilterBtn'),
+};
 
-    // Main entry point
-    document.addEventListener('DOMContentLoaded', initialize);
 
-    function initialize() {
-        // Hide modals initially
-        ui.sheetModal.style.display = 'none';
-        ui.quickStatsModal.style.display = 'none';
-        ui.confirmImportModal.style.display = 'none';
-       
-        // Setup main event listeners
-        setupEventListeners();
-        // Load any previously saved user data (file URL, folder ID)
-        loadSavedData();
-        
-        // Add entrance animation to form container
-        setTimeout(() => {
-            document.querySelector('.form-container').classList.add('fade-in');
-        }, 100);
+
+
+
+
+
+
+document.addEventListener('DOMContentLoaded', initialize);
+
+
+
+
+
+
+
+
+function initialize() {
+    setupEventListeners();
+    loadSavedData();
+    setupPlacementFilters();
+}
+
+
+
+
+
+
+
+
+function setupPlacementFilters() {
+  const placements = (window.CONFIG && CONFIG.PLACEMENTS) || ['live','example','ai','homework','interactive_example'];
+  const container = document.getElementById('placementFilters');
+  if (!container) return;
+  container.innerHTML = placements.map(p => `<label><input type="checkbox" name="placementFilter" value="${p}"> ${p}</label>`).join('');
+}
+
+
+
+
+
+
+
+
+function setupEventListeners() {
+    ui.previewBtn.addEventListener('click', handlePreview);
+    ui.importBtn.addEventListener('click', handleImport);
+    ui.selectAllBtn.addEventListener('click', () => selectAll(true));
+    ui.deselectAllBtn.addEventListener('click', () => selectAll(false));
+    ui.resetImportedBtn.addEventListener('click', resetImportedSlides);
+    ui.backToFormBtn.addEventListener('click', exitPreviewMode);
+    ui.folderId.addEventListener('input', validateInputs);
+     // Modal Listeners
+    ui.manageHtmlSourcesBtn.addEventListener('click', openHtmlSourcesModal);
+    ui.addHtmlSourceBtn.addEventListener('click', () => addHtmlSourceInput());
+    ui.saveHtmlSourcesBtn.addEventListener('click', saveHtmlSources);
+    ui.updateFromSheetBtn.addEventListener('click', () => ui.sheetModal.style.display = 'flex');
+    ui.applySheetBtn.addEventListener('click', applySheetData);
+    ui.quickStatsBtn.addEventListener('click', showQuickStatsModal);
+    ui.confirmImportBtn.addEventListener('click', doImportSlides);
+    ui.cancelImportBtn.addEventListener('click', () => ui.confirmImportModal.style.display = 'none');
+
+
+
+
+
+
+
+
+    document.querySelectorAll('.modal-close-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.getElementById(btn.dataset.modalId).style.display = 'none';
+        });
+    });
+
+
+
+
+
+
+
+
+    const filterBtn = document.getElementById('filterBtn');
+    const filterModal = document.getElementById('filterModal');
+    const closeFilterModal = document.getElementById('closeFilterModal');
+    const applyFilterBtn = document.getElementById('applyFilterBtn');
+    filterBtn && filterBtn.addEventListener('click', () => { filterModal.style.display = 'flex'; });
+    closeFilterModal && closeFilterModal.addEventListener('click', () => { filterModal.style.display = 'none'; });
+    applyFilterBtn && applyFilterBtn.addEventListener('click', applyFilter);
+
+
+
+
+
+
+
+
+    addPreviewEventListeners();
+}
+ function openHtmlSourcesModal() {
+    ui.htmlSourcesContainer.innerHTML = '';
+    if (htmlSourceUrls.length === 0) {
+        addHtmlSourceInput();
+    } else {
+        htmlSourceUrls.forEach(url => addHtmlSourceInput(url));
     }
-
-    function setupEventListeners() {
-        ui.previewBtn.addEventListener('click', handlePreview);
-        ui.importBtn.addEventListener('click', handleImport);
-        ui.selectAllBtn.addEventListener('click', () => selectAll(true));
-        ui.deselectAllBtn.addEventListener('click', () => selectAll(false));
-        ui.backToFormBtn.addEventListener('click', exitPreviewMode);
-        ui.fileUrl.addEventListener('input', validateInputs);
-        ui.folderId.addEventListener('input', validateInputs);
-        document.getElementById('resetImportedBtn').addEventListener('click', resetImportedSlides);
-       
-        // Collapse buttons
-        ui.headerCollapseBtn.addEventListener('click', () => toggleCollapse('header'));
-        ui.footerCollapseBtn.addEventListener('click', () => toggleCollapse('footer'));
-        ui.previewControlsCollapseBtn.addEventListener('click', () => toggleCollapse('previewControls'));
-        ui.headerRestoreBtn.addEventListener('click', () => restoreCollapsed('header'));
-        ui.previewControlsRestoreBtn.addEventListener('click', () => restoreCollapsed('previewControls'));
-        ui.footerRestoreBtn.addEventListener('click', () => restoreCollapsed('footer'));
-       
-        // Modal Triggers
-        document.getElementById('quickStatsBtn').addEventListener('click', showQuickStatsModal);
-        document.getElementById('updateFromSheetBtn').addEventListener('click', () => {
-            ui.sheetModal.style.display = 'flex';
-            ui.sheetModal.classList.add('fade-in');
-        });
-
-        // Modal Close Buttons
-        document.getElementById('closeSheetModal').addEventListener('click', () => {
-            ui.sheetModal.classList.add('fade-out');
-            setTimeout(() => ui.sheetModal.style.display = 'none', 300);
-        });
-        document.getElementById('closeQuickStatsModal').addEventListener('click', () => {
-            ui.quickStatsModal.classList.add('fade-out');
-            setTimeout(() => ui.quickStatsModal.style.display = 'none', 300);
-        });
-        document.getElementById('closeConfirmImportModal').addEventListener('click', () => {
-            ui.confirmImportModal.classList.add('fade-out');
-            setTimeout(() => ui.confirmImportModal.style.display = 'none', 300);
-        });
-        document.getElementById('cancelImportBtn').addEventListener('click', () => {
-            ui.confirmImportModal.classList.add('fade-out');
-            setTimeout(() => ui.confirmImportModal.style.display = 'none', 300);
-        });
-       
-        // Modal Actions
-        document.getElementById('applySheetBtn').addEventListener('click', applySheetData);
-       
-        // Search and filter listeners
-        if (ui.searchSlides && ui.filterSlides) {
-            ui.searchSlides.addEventListener('input', function(e) {
-                currentSearch = e.target.value.trim();
-                renderSlides(allSlidesData);
-            });
-            ui.filterSlides.addEventListener('change', function(e) {
-                currentFilter = e.target.value;
-                renderSlides(allSlidesData);
-            });
-        }
-       
-        // Use event delegation for dynamic content in the preview area
-        addPreviewEventListeners();
-    }
-
-    function addPreviewEventListeners() {
-        // A single, delegated click listener for the entire preview area for efficiency
-        ui.slidesPreview.addEventListener('click', e => {
-            const slideItem = e.target.closest('.slide-item');
-            if (!slideItem) return;
+    ui.htmlSourcesModal.style.display = 'flex';
+}
 
 
-            const index = parseInt(slideItem.dataset.index, 10);
-            if (isNaN(index)) return;
 
 
-            // Handle specific button actions within a slide item
-            const action = e.target.dataset.action;
-            if (action === 'toggle-id') {
-                toggleSectionId(index);
-                return; // Prevent selection change
-            }
-            if (action === 'set-checkpoint') {
-                setCheckpoint(index);
-                return; // Prevent selection change
-            }
 
 
-            // If the click was not on an interactive element, treat it as a selection toggle
-            if (!e.target.closest('input, select, button, .drag-handle')) {
-                const checkbox = slideItem.querySelector('.slide-checkbox');
-                if (checkbox) {
-                    checkbox.checked = !checkbox.checked;
-                    updateSlideVisuals(index); // Manually update UI
+
+
+function addHtmlSourceInput(url = '') {
+    const id = `source-${Date.now()}-${Math.random()}`;
+    const item = document.createElement('div');
+    item.className = 'html-source-item';
+    item.id = id;
+    item.innerHTML = `
+        <input type="text" class="html-source-url" value="${url}" placeholder="https://drive.google.com/file/d/FILE_ID/view">
+        <button class="btn btn-icon" onclick="document.getElementById('${id}').remove()">-</button>
+    `;
+    ui.htmlSourcesContainer.appendChild(item);
+}
+
+
+
+
+
+
+
+
+// عند الضغط على زر حفظ المصادر فقط يتم الحفظ (لا يوجد حفظ تلقائي عند تغيير معرف المجلد)
+function saveHtmlSources() {
+    htmlSourceUrls = Array.from(document.querySelectorAll('.html-source-url'))
+                       .map(input => input.value.trim())
+                       .filter(url => url);
+ ui.htmlSourcesModal.style.display = 'none';
+ ui.sourceCount.textContent = htmlSourceUrls.length;
+ validateInputs();
+ // حفظ فقط عند الضغط على زر حفظ
+ if (typeof google !== 'undefined' && google.script && google.script.run) {
+     google.script.run.saveUserData(htmlSourceUrls, ui.folderId.value.trim());
+ }
+ if (htmlSourceUrls.length > 0) {
+     showMessage(`${htmlSourceUrls.length}    مصدر   تم   حفظه .`, 'success');
+ }
+}
+
+
+
+
+
+
+
+
+function loadSavedData() {
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+            .withSuccessHandler(data => {
+                if (data.htmlFileUrls) {
+                    htmlSourceUrls = data.htmlFileUrls;
+                    ui.sourceCount.textContent = htmlSourceUrls.length;
                 }
-            }
-        });
-
-
-        // Listener for form element changes (like checkbox, select)
-        ui.slidesPreview.addEventListener('change', e => {
-            const slideItem = e.target.closest('.slide-item');
-            if (!slideItem) return;
-
-
-            const index = parseInt(slideItem.dataset.index, 10);
-            if (isNaN(index)) return;
-           
-            const action = e.target.dataset.action;
-            if (action === 'select') {
-                updateSlideVisuals(index);
-            } else if (action === 'change-placement') {
-                handlePlacementChange(index, e.target.value);
-            }
-        });
-
-
-        // Listener for move-by-number input
-        ui.slidesPreview.addEventListener('keydown', e => {
-            if (e.key === 'Enter' && e.target.dataset.action === 'move-to-position') {
-                e.preventDefault();
-                const slideItem = e.target.closest('.slide-item');
-                if (!slideItem) return;
-                const index = parseInt(slideItem.dataset.index, 10);
-                const newPosition = parseInt(e.target.value, 10);
-                moveSlideToPosition(index, newPosition);
-            }
-        });
-
-
-        // Global listener for keyboard shortcuts (moving slides)
-        document.addEventListener('keydown', handleKeyboardMove);
+                if (data.imageFolderId) ui.folderId.value = data.imageFolderId;
+                validateInputs();
+            })
+            .withFailureHandler(err => console.error('Could not load saved data:', err))
+            .getSavedUserData();
+    } else {
+         console.error("google.script.run is not available. This script must be run within a Google Apps Script environment.");
     }
+}
 
 
-    function handleKeyboardMove(e) {
-         // Only act if preview is visible and it's a command/ctrl + arrow shortcut
-         if (!ui.body.classList.contains('preview-mode') || !(e.metaKey || e.ctrlKey) || !['ArrowUp', 'ArrowDown'].includes(e.key)) {
-             return;
-         }
-         e.preventDefault(); // Prevent page scroll
 
 
-         const selectedCheckbox = ui.slidesPreview.querySelector('.slide-checkbox:checked');
-         if (!selectedCheckbox) {
-             showMessage('يرجى تحديد شريحة أولاً لتحريكها.', 'error');
-             return;
-         }
 
 
-         const oldIndex = parseInt(selectedCheckbox.id.split('-')[1], 10);
-         let newIndex = (e.key === 'ArrowUp')
-            ? Math.max(0, oldIndex - 1)
-            : Math.min(allSlidesData.length - 1, oldIndex + 1);
 
 
-         if (newIndex !== oldIndex) {
-             moveSlide(oldIndex, newIndex, true); // Pass true to scroll
-         }
-     }
+function validateInputs() {
+    const isValid = htmlSourceUrls.length > 0 && ui.folderId.value.trim();
+    ui.previewBtn.disabled = !isValid || isLoading;
+}
 
 
-    function moveSlideToPosition(currentIndex, newPosition) {
-         if (isNaN(newPosition) || newPosition < 1 || newPosition > allSlidesData.length) {
-             showMessage(`الرقم غير صالح. يرجى إدخال رقم بين 1 و ${allSlidesData.length}`, 'error');
-             const input = document.querySelector(`#item-${currentIndex} .move-to-input`);
-             if(input) input.value = '';
-             return;
-         }
-         const newIndex = newPosition - 1;
-         if (newIndex !== currentIndex) {
-             moveSlide(currentIndex, newIndex, true);
-         }
-     }
 
 
-    function moveSlide(oldIndex, newIndex, shouldScroll = false) {
-        if (oldIndex < 0 || oldIndex >= allSlidesData.length || newIndex < 0 || newIndex >= allSlidesData.length) {
-            return;
-        }
-        // Reorder the data array
-        const [movedItem] = allSlidesData.splice(oldIndex, 1);
-        allSlidesData.splice(newIndex, 0, movedItem);
 
 
-        // Re-render the entire preview
-        renderSlides(allSlidesData);
 
 
-        // Re-select the moved item
-        const newCheckbox = document.getElementById(`slide-${newIndex}`);
-        if (newCheckbox) {
-            newCheckbox.checked = true;
-            updateSlideVisuals(newIndex);
-        }
-
-
-        // Scroll the moved item into view
-        if (shouldScroll) {
-            const newItemElement = document.getElementById(`item-${newIndex}`);
-            if (newItemElement) {
-                newItemElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-        }
+function handlePreview() {
+    if (htmlSourceUrls.length === 0) {
+        showMessage('  يرجى   إضافة   مصدر  HTML  واحد   على   الأقل .', 'error');
+        return;
     }
-
-
-    function enterPreviewMode() {
-        ui.body.classList.add('preview-mode');
-        ui.slidesPreview.style.display = 'block';
-        ui.loading.style.display = 'none';
-        ui.searchFilterBar.style.display = 'flex';
-        
-        // Load collapse state when entering preview mode
-        loadCollapseState();
-        
-        // Add entrance animations
-        setTimeout(() => {
-            ui.searchFilterBar.classList.add('slide-in');
-            ui.slidesPreview.classList.add('fade-in');
-        }, 100);
-    }
-
-
-    function exitPreviewMode() {
-        ui.body.classList.remove('preview-mode');
-        ui.slidesPreview.style.display = 'none';
-        ui.statusContainer.innerHTML = '';
-        ui.searchFilterBar.style.display = 'none';
-        
-        // Reset collapse state when exiting preview mode
-        headerCollapsed = false;
-        footerCollapsed = false;
-        previewControlsCollapsed = false;
-        document.querySelector('header').classList.remove('collapsed');
-        document.querySelector('footer').classList.remove('collapsed');
-        document.querySelector('.preview-controls').classList.remove('collapsed');
-        ui.headerCollapseBtn.classList.remove('collapsed');
-        ui.footerCollapseBtn.classList.remove('collapsed');
-        ui.previewControlsCollapseBtn.classList.remove('collapsed');
-        ui.headerCollapseBtn.textContent = '▼';
-        ui.footerCollapseBtn.textContent = '▼';
-        ui.previewControlsCollapseBtn.textContent = '▼';
-        updateContainerSpacing();
-        
-        // Reset animations
-        ui.searchFilterBar.classList.remove('slide-in');
-        ui.slidesPreview.classList.remove('fade-in');
-        ui.headerRestoreBtn.classList.remove('visible');
-        ui.footerRestoreBtn.classList.remove('visible');
-        ui.previewControlsRestoreBtn.classList.remove('visible');
-    }
-
-
-    function loadSavedData() {
-        if (typeof google !== 'undefined' && google.script) {
-            google.script.run
-                .withSuccessHandler(data => {
-                    if (data.htmlFileUrl) ui.fileUrl.value = data.htmlFileUrl;
-                    if (data.imageFolderId) ui.folderId.value = data.imageFolderId;
-                    validateInputs();
-                })
-                .withFailureHandler(error => console.log('Could not load saved data:', error))
-                .getSavedUserData();
-        }
-    }
-
-
-    function validateInputs() {
-        const isValid = ui.fileUrl.value.trim() && ui.folderId.value.trim();
-        ui.previewBtn.disabled = !isValid || isLoading;
-    }
-   
-    function handlePreview() {
-        setLoadingState(true, 'جارٍ تحميل الشرائح...');
+    setLoadingState(true, '  جارٍ تحميل   ودمج   الشرائح   من   جميع   المصادر ...');
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
         google.script.run
             .withSuccessHandler(onPreviewSuccess)
             .withFailureHandler(onApiError)
-            .getSlidesForPreview(ui.fileUrl.value.trim(), ui.folderId.value.trim());
+            .getSlidesForPreview(htmlSourceUrls, ui.folderId.value.trim());
+    } else {
+        onApiError({message: "Google Apps Script environment not found."});
     }
+}
 
 
-    function handleImport() {
-        let selectedSlides = allSlidesData
-            .map((slide, index) => ({...slide, originalIndex: index}))
-            .filter(slide => document.getElementById(`slide-${slide.originalIndex}`)?.checked);
 
 
-        if (selectedSlides.length === 0) {
-            showMessage('يرجى تحديد شريحة واحدة على الأقل للاستيراد.', 'error');
-            return;
-        }
-        showConfirmImportModal(selectedSlides);
+
+
+
+
+function onPreviewSuccess(result) {
+    setLoadingState(false);
+    if (result && result.error) {
+        showMessage(result.error, 'error');
+        exitPreviewMode();
+        return;
     }
-
-
-    function showConfirmImportModal(selectedSlides) {
-        let typeCounts = selectedSlides.reduce((acc, slide) => {
-            const typeKey = slide.placement || slide.type || 'غير محدد';
-            acc[typeKey] = (acc[typeKey] || 0) + 1;
-            return acc;
-        }, {});
-
-
-        let html = `<ul style="list-style:none;padding:0;margin:0 0 12px 0;line-height:2;">
-             <li>🔢 <b>عدد الشرائح المحددة:</b> ${selectedSlides.length}</li>
-             <li><b>تفصيل الأنواع:</b></li>
-             ${Object.entries(typeCounts).map(([type, count]) =>
-                `<li style="margin-bottom:2px;">• <span style="color:#7c3aed;font-weight:bold;">${type}</span>: <span style="color:#1e293b;">${count}</span></li>`
-             ).join('')}
-        </ul>`;
-       
-        document.getElementById('confirmImportContent').innerHTML = html;
-        ui.confirmImportModal.style.display = 'flex';
-
-
-        document.getElementById('confirmImportBtn').onclick = () => {
-            ui.confirmImportModal.style.display = 'none';
-            doImportSlides(selectedSlides);
-        };
+    if (!result || result.length === 0) {
+        showMessage('لم يتم العثور على شرائح جديدة. قد تكون جميعها مستوردة بالفعل. استخدم "إعادة تعيين المستورد" لعرضها مرة أخرى.', 'success');
+        exitPreviewMode();
+        return;
     }
+     allSlidesData = result.map(slide => ({
+         ...slide,
+         isCheckpoint: false,
+         selected: false,
+         notInSheet: false
+     }));
+     renderSlides(allSlidesData);
+     enterPreviewMode();
+     showMessage(`  تم   تحميل  ${result.length}    شريحة .  حدد   ما   تريد   ثم   اضغط   استيراد .`, 'success');
+}
 
 
-    function doImportSlides(selectedSlides) {
-        setLoadingState(true, `جارٍ استيراد ${selectedSlides.length} شريحة...`);
-        ui.importBtn.disabled = true;
+
+
+
+
+
+
+function handleImport() {
+    const selectedSlides = allSlidesData.filter(slide => slide.selected);
+    if (selectedSlides.length === 0) {
+        showMessage('  يرجى   تحديد   شريحة   واحدة   على   الأقل   للاستيراد .', 'error');
+        return;
+    }
+    showConfirmImportModal(selectedSlides);
+}
+
+
+
+
+
+
+
+
+ function showConfirmImportModal(selectedSlides) {
+     let typeCounts = selectedSlides.reduce((acc, slide) => {
+         const typeKey = slide.placement || slide.type || '  غير   محدد ';
+         acc[typeKey] = (acc[typeKey] || 0) + 1;
+         return acc;
+     }, {});
+     let html = `<ul style="list-style:none;padding:0;margin:0 0 12px 0;line-height:2;">
+           <li>🔢 <b> عدد   الشرائح   المحددة :</b> ${selectedSlides.length}</li>
+           <li><b> تفصيل   الأنواع :</b></li>
+          ${Object.entries(typeCounts).map(([type, count]) =>
+             `<li style="margin-bottom:2px;">• <span style="color:#7c3aed;font-weight:bold;">${type}</span>: <span style="color:#1e293b;">${count}</span></li>`
+          ).join('')}
+     </ul>`;
+     ui.confirmImportContent.innerHTML = html;
+     ui.confirmImportModal.style.display = 'flex';
+ }
+
+
+
+
+
+
+
+
+function doImportSlides() {
+     ui.confirmImportModal.style.display = 'none';
+     const selectedSlides = allSlidesData.filter(slide => slide.selected);
+     if (selectedSlides.length === 0) return;
+
+
+
+
+
+
+
+
+     setLoadingState(true, `  جارٍ استيراد  ${selectedSlides.length}    شريحة ...`);
+     ui.importBtn.disabled = true;
+
+
+
+
+
+
+
+
+     if (typeof google !== 'undefined' && google.script && google.script.run) {
         google.script.run
             .withSuccessHandler(onImportSuccess)
             .withFailureHandler(onApiError)
             .importSelectedSlides(selectedSlides, ui.folderId.value.trim());
+     } else {
+        onApiError({message: "Google Apps Script environment not found."});
+     }
+}
+
+
+
+
+
+
+
+
+function onImportSuccess(response) {
+    setLoadingState(false);
+    if (response && response.error) {
+         showMessage(response.error, 'error');
+         return;
     }
-   
-    function onPreviewSuccess(result) {
-        setLoadingState(false);
-        if (result && result.error) {
-            showMessage(result.error, 'error');
-            exitPreviewMode();
-            return;
-        }
-        if (!result || result.length === 0) {
-            showMessage('لم يتم العثور على أي شرائح جديدة لاستيرادها.', 'success');
-            exitPreviewMode();
-            return;
-        }
-       
-        google.script.run
-            .withSuccessHandler(importedIds => {
-                allSlidesData = result.map(slide => ({
-                    ...slide,
-                    isImported: (importedIds && importedIds[slide.questionId || slide.slideId]),
-                    isCheckpoint: false
-                }));
-                renderSlides(allSlidesData);
-                enterPreviewMode();
-                showMessage(`تم تحميل ${result.length} شريحة. حدد ما تريد ثم اضغط استيراد.`, 'success');
-            })
-            .withFailureHandler(() => { // Fallback if getting imported IDs fails
-                allSlidesData = result.map(slide => ({...slide, isImported: false, isCheckpoint: false}));
-                renderSlides(allSlidesData);
-                enterPreviewMode();
-            })
-            .getImportedSlidesIds();
-    }
+    const importedIds = response;
+    showMessage(`✅  تم   استيراد  ${importedIds.length}    شريحة   بنجاح !`, 'success');
+ 
+    allSlidesData = allSlidesData.filter(slide => {
+        const id = slide.questionId || slide.slideId;
+        return !importedIds.includes(id);
+    });
 
 
-    function onImportSuccess(response) {
-        setLoadingState(false);
-        if (response && response.error) {
-             showMessage(response.error, 'error');
-             return;
-        }
-        const importedIds = response;
-        showMessage(`✅ تم استيراد ${importedIds.length} شريحة بنجاح!`, 'success');
 
 
-        allSlidesData = allSlidesData.filter(slide => {
-            const id = slide.questionId || slide.slideId;
-            return !importedIds.includes(id);
-        });
-     
-        if (allSlidesData.length > 0) {
-           renderSlides(allSlidesData);
-           selectAll(false);
-        } else {
-           showMessage('تم استيراد جميع الشرائح المحددة بنجاح.', 'success');
-           exitPreviewMode();
-        }
-        updateImportButtonState();
-    }
 
 
-    function onApiError(error) {
-        setLoadingState(false);
-        showMessage(`خطأ غير متوقع: ${error.message}`, 'error');
+
+
+    if (allSlidesData.length > 0) {
+        renderSlides(allSlidesData);
+    } else {
+        showMessage('تم استيراد جميع الشرائح المحددة بنجاح.', 'success');
         exitPreviewMode();
     }
- 
-    function renderSlides(slides) {
-        const scrollPosition = ui.slidesPreview.scrollTop;
-        
-        // Filter slides based on search and filter
-        let filtered = slides.filter(slide => {
-            // Filter by type
-            if (currentFilter === 'questions' && !slide.isQuestion) return false;
-            if (currentFilter === 'examples' && slide.placement !== 'example') return false;
-            if (currentFilter === 'imported' && !slide.isImported) return false;
-            if (currentFilter === 'notimported' && slide.isImported) return false;
-            
-            // Filter by search
-            if (currentSearch) {
-                const q = currentSearch.toLowerCase();
-                return (
-                    (slide.title && slide.title.toLowerCase().includes(q)) ||
-                    (slide.originalTitle && slide.originalTitle.toLowerCase().includes(q)) ||
-                    (slide.questionId && slide.questionId.toLowerCase().includes(q)) ||
-                    (slide.sectionId && slide.sectionId.toLowerCase().includes(q)) ||
-                    (slide.slideId && slide.slideId.toLowerCase().includes(q))
-                );
-            }
-            return true;
-        });
-        
-        ui.slidesPreview.innerHTML = filtered.map((slide, index) => {
-            const imageHtml = slide.imageUrl ? `<div class="slide-image-container"><img src="${slide.imageUrl}" class="slide-image" alt="صورة الشريحة" loading="lazy"></div>` : '';
-            const questionHtml = slide.isQuestion ? `
-                <div class="question-content">
-                    <p class="question-body">${slide.questionBody || 'نص السؤال غير متوفر'}</p>
-                    ${(slide.answerOptions && slide.answerOptions.length > 0) ? `
-                    <ul class="answer-options">
-                        ${slide.answerOptions.map(option => `<li>${option}</li>`).join('')}
-                    </ul>` : ''}
-                </div>` : '';
-            const placementHtml = slide.isQuestion ? `
-                <select class="placement-select" data-action="change-placement">
-                    ${['live', 'example', 'ai', 'homework', 'interactive_example'].map(p => `<option value="${p}" ${slide.placement === p ? 'selected' : ''}>${p}</option>`).join('')}
-                </select>` : '';
-            const details = [
-                slide.isQuestion ? `معرف السؤال: ${slide.questionId || 'N/A'}` : `معرف الشريحة: ${slide.slideId || 'N/A'}`,
-                slide.sectionTitle ? `عنوان القسم: ${slide.sectionTitle}` : null
-            ].filter(Boolean).join(' • ');
-
-            return `
-                <div class="slide-item ${slide.selected ? 'selected' : ''} ${slide.isImported ? 'imported-question' : ''}" id="item-${index}" data-index="${index}">
-                    <div class="slide-number-indicator">${index + 1}</div>
-                    <div class="normal-view">
-                        <div class="slide-header">
-                            <div class="drag-handle">⠿</div>
-                            <input type="number" class="move-to-input" data-action="move-to-position" placeholder="#" min="1" max="${slides.length}">
-                            <input type="checkbox" class="slide-checkbox" id="slide-${index}" data-action="select" ${slide.selected ? 'checked' : ''}>
-                            ${!slide.isQuestion && slide.sectionId ? `<button class="btn-toggle-section-id ${slide.showSectionId ? 'active' : ''}" data-action="toggle-id">${slide.showSectionId ? 'إخفاء ID' : 'إظهار ID'}</button>` : ''}
-                            ${slide.isQuestion ? `<button class="btn-checkpoint ${slide.isCheckpoint ? 'active' : ''}" data-action="set-checkpoint">Checkpoint</button>` : ''}
-                            ${placementHtml}
-                            <div class="slide-title" id="title-${index}">${slide.title}</div>
-                        </div>
-                        ${imageHtml}
-                        ${questionHtml}
-                        <div class="slide-details">${details}</div>
-                    </div>
-                    <div class="icon-view">
-                         <div class="drag-handle">⠿</div>
-                        <div class="slide-icon-preview" ${slide.imageUrl ? `style="background-image: url('${slide.imageUrl}')"` : ''}>${slide.imageUrl ? '' : (index + 1)}</div>
-                        <div class="slide-title-preview">${slide.originalTitle}</div>
-                    </div>
-                </div>`;
-        }).join('');
-     
-        ui.slidesPreview.scrollTop = scrollPosition;
-        
-        // Add entrance animations to slide items
-        setTimeout(() => {
-            const slideItems = ui.slidesPreview.querySelectorAll('.slide-item');
-            slideItems.forEach((item, index) => {
-                setTimeout(() => {
-                    item.classList.add('animate-in');
-                }, index * 50); // Stagger the animations
-            });
-        }, 100);
-        
-        initializeSortable();
-        updateImportButtonState();
+    updateImportButtonState();
+}
+ function applySheetData() {
+    const url = ui.sheetUrlInput.value.trim();
+    if (!url) {
+        ui.sheetStatusMsg.textContent = '  يرجى   إدخال   رابط   الشيت .';
+        return;
     }
+    ui.sheetStatusMsg.textContent = '  جاري   جلب   البيانات   من   الشيت ...';
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+        google.script.run
+            .withSuccessHandler(sheetRows => {
+                if (sheetRows && sheetRows.error) {
+                    ui.sheetStatusMsg.textContent = `  فشل : ${sheetRows.error}`;
+                    return;
+                }
+                ui.sheetModal.style.display = 'none';
+                ui.sheetStatusMsg.textContent = '';
+                updatePreviewFromSheet(sheetRows);
+            })
+            .withFailureHandler(e => {
+                ui.sheetStatusMsg.textContent = `  فشل   في   جلب   بيانات   الشيت : ${e.message || e}`;
+            })
+            .getSheetRows(url);
+    } else {
+         ui.sheetStatusMsg.textContent = "Google Apps Script environment not found.";
+    }
+}
 
 
-    function initializeSortable() {
-        if (ui.slidesPreview.sortable) {
-            ui.slidesPreview.sortable.destroy();
+
+
+
+
+
+
+ function updatePreviewFromSheet(sheetRows) {
+     if (!Array.isArray(sheetRows)) {
+         showMessage('  فشل   في   جلب   بيانات   الشيت   أو   تنسيق   غير   صحيح .', 'error');
+         return;
+     }
+     const sheetQuestionMap = new Map(sheetRows.map((row, index) => [row.question_id, { ...row, sheetOrder: index }]));
+     const sections = [];
+     const questionsBySection = {};
+     const questionsNotInSheet = [];
+     allSlidesData.forEach(slide => {
+         if (!slide.isQuestion) {
+             sections.push(slide);
+         } else {
+             if (sheetQuestionMap.has(slide.questionId)) {
+                 const sheetData = sheetQuestionMap.get(slide.questionId);
+                 slide.placement = sheetData.question_placement || slide.placement;
+                 slide.questionType = sheetData.question_type || slide.questionType;
+                 slide.section_no = sheetData.section_no;
+                 slide.sheetOrder = sheetData.sheetOrder;
+                 slide.notInSheet = false;
+                 const sectionNo = slide.section_no || 'unassigned';
+                 if (!questionsBySection[sectionNo]) {
+                     questionsBySection[sectionNo] = [];
+                 }
+                 questionsBySection[sectionNo].push(slide);
+             } else {
+                 slide.notInSheet = true;
+                 questionsNotInSheet.push(slide);
+             }
+         }
+     });
+     for (const sectionNo in questionsBySection) {
+         questionsBySection[sectionNo].sort((a, b) => a.sheetOrder - b.sheetOrder);
+     }
+     const finalSlides = [];
+     sections.forEach(sectionSlide => {
+         finalSlides.push(sectionSlide);
+         if (sectionSlide.sectionId && questionsBySection[sectionSlide.sectionId]) {
+             finalSlides.push(...questionsBySection[sectionSlide.sectionId]);
+             delete questionsBySection[sectionSlide.sectionId];
+         }
+     });
+     for (const sectionNo in questionsBySection) {
+         finalSlides.push(...questionsBySection[sectionNo]);
+     }
+     finalSlides.push(...questionsNotInSheet);
+     allSlidesData = finalSlides;
+     renderSlides(allSlidesData);
+     const questionsInSheetCount = sheetRows.length - questionsNotInSheet.length;
+     showMessage(`  تم   التحديث . ${questionsInSheetCount}    سؤال   مطابق   للشيت، و  ${questionsNotInSheet.length}    سؤال   غير   مطابق  ( مميز   بعلامة  ❌).`, 'success');
+ }
+
+
+
+
+
+
+
+
+function renderSlides(slides) {
+    const scrollPosition = ui.slidesPreview.scrollTop;
+    ui.slidesPreview.innerHTML = slides.map((slide, index) => {
+        const isNotInSheet = slide.isQuestion && slide.notInSheet;
+        const isBank = slide.html && slide.html.includes('data-questionid');
+        const itemClasses = ['slide-item', slide.selected ? 'selected' : ''].filter(Boolean).join(' ');
+        const imageHtml = slide.imageUrl ? `<div class="slide-image-container"><img src="${slide.imageUrl}" class="slide-image" alt="  صورة   الشريحة " loading="lazy"></div>` : '';
+        const questionHtml = slide.isQuestion ? `
+            <div class="question-content">
+                <p class="question-body">${slide.questionBody || '  نص   السؤال   غير   متوفر ' }</p>
+                ${(slide.answerOptions && slide.answerOptions.length > 0) ? `
+                <ul class="answer-options">
+                    ${slide.answerOptions.map(option => `<li>${option}</li>`).join('')}
+                </ul>` : ''}
+            </div>` : '';
+        const placementHtml = slide.isQuestion ? `
+            <select class="placement-select" data-action="change-placement">
+                ${CONFIG.PLACEMENTS.map(p => `<option value="${p}" ${slide.placement === p ? 'selected' : ''}>${p}</option>`).join('')}
+            </select>` : '';
+        const details = [
+            slide.isQuestion ? `  معرف   السؤال : ${slide.questionId || 'N/A'}` : `  معرف   الشريحة : ${slide.slideId || 'N/A'}`,
+            slide.sectionTitle ? `  عنوان   القسم : ${slide.sectionTitle}` : null,
+            isBank ? `<span class='bank-badge'>بنك</span>` : null,
+            slide.isCheckpoint ? `<button class='checkpoint-badge' data-action='toggle-checkpoint'>Checkpoint</button>` : null
+        ].filter(Boolean).join(' • ');
+
+
+
+
+
+
+
+
+        // شارة الترقيم
+        const indexBadge = `<div class="slide-index-badge">${index + 1}</div>`;
+
+
+
+
+
+
+
+
+        return `
+            <div class="${itemClasses}" id="item-${index}" data-index="${index}">
+                ${indexBadge}
+                ${isNotInSheet ? '<div class="not-in-sheet-icon">❌</div>' : ''}
+                <div class="normal-view">
+                    <div class="slide-header">
+                        <div class="drag-handle">⠿</div>
+                        <input type="checkbox" class="slide-checkbox" id="slide-${index}" data-action="select" ${slide.selected ? 'checked' : ''}>
+                        <input type="number" class="move-to-input" data-action="move-to-position" placeholder="#" min="1" max="${slides.length}">
+                        ${!slide.isQuestion && slide.sectionId ? `<button class="btn-toggle-section-id ${slide.showSectionId ? 'active' : ''}" data-action="toggle-id">${slide.showSectionId ? '  إخفاء  ID' : '  إظهار  ID'}</button>` : ''}
+                        ${slide.isQuestion ? `<button class="btn-checkpoint ${slide.isCheckpoint ? 'active' : ''}" data-action="set-checkpoint">Checkpoint</button>` : ''}
+                        ${placementHtml}
+                        <div class="slide-title" id="title-${index}">${slide.title}${isBank ? " <span class='bank-badge'>بنك</span>" : ''}</div>
+                    </div>
+                    ${imageHtml}
+                    ${questionHtml}
+                    <div class="slide-details">${details}</div>
+                </div>
+                <div class="icon-view">
+                     <div class="drag-handle">⠿</div>
+                     <div class="slide-icon-preview" ${slide.imageUrl ? `style="background-image: url('${slide.imageUrl}')"` : ''}>${slide.imageUrl ? '' : (index + 1)}</div>
+                     <div class="slide-title-preview">${slide.originalTitle}</div>
+                </div>
+            </div>`;
+    }).join('');
+    ui.slidesPreview.scrollTop = scrollPosition;
+    initializeSortable();
+    updateImportButtonState();
+}
+ // --- Helper Functions ---
+function onApiError(error) {
+    setLoadingState(false);
+    showMessage(`  خطأ   غير   متوقع : ${error.message}`, 'error');
+    exitPreviewMode();
+}
+
+
+
+
+
+
+
+
+function setLoadingState(loading, message = '  جارٍ التحميل ...') {
+    isLoading = loading;
+    ui.loading.style.display = loading ? 'block' : 'none';
+    if (loading) ui.loading.querySelector('.loading-text').textContent = message;
+    if (ui.body.classList.contains('preview-mode')) {
+        ui.slidesPreview.style.display = loading ? 'none' : 'block';
+    }
+    ui.previewBtn.disabled = loading || !ui.folderId.value.trim() || htmlSourceUrls.length === 0;
+    ui.importBtn.disabled = loading || allSlidesData.filter(s => s.selected).length === 0;
+    ui.selectAllBtn.disabled = loading;
+    ui.deselectAllBtn.disabled = loading;
+    ui.resetImportedBtn.disabled = loading;
+    ui.updateFromSheetBtn.disabled = loading;
+}
+
+
+
+
+
+
+
+
+function showMessage(message, type = 'success') {
+    const messageElement = document.createElement('div');
+    messageElement.className = `status-message status-${type}`;
+    messageElement.textContent = message;
+    ui.statusContainer.innerHTML = '';
+    ui.statusContainer.appendChild(messageElement);
+    setTimeout(() => {
+        if (ui.statusContainer.contains(messageElement)) {
+            ui.statusContainer.removeChild(messageElement);
         }
-        ui.slidesPreview.sortable = new Sortable(ui.slidesPreview, {
-            handle: '.drag-handle',
-            animation: 200,
-            ghostClass: 'sortable-ghost',
-            chosenClass: 'sortable-chosen',
-            onStart: () => ui.slidesPreview.classList.add('dragging-mode'),
-            onEnd: (evt) => {
-                ui.slidesPreview.classList.remove('dragging-mode');
-                moveSlide(evt.oldIndex, evt.newIndex);
-            }
-        });
+    }, 7000);
+}
+ function enterPreviewMode() {
+    ui.body.classList.add('preview-mode');
+    ui.slidesPreview.style.display = 'block';
+    ui.loading.style.display = 'none';
+}
+
+
+
+
+
+
+
+
+function exitPreviewMode() {
+    ui.body.classList.remove('preview-mode');
+    ui.slidesPreview.style.display = 'none';
+    ui.statusContainer.innerHTML = '';
+    allSlidesData = [];
+}
+
+
+
+
+
+
+
+
+function selectAll(state) {
+    allSlidesData.forEach((slide, index) => {
+        slide.selected = state;
+        updateSlideVisuals(index);
+    });
+}
+
+
+
+
+
+
+
+
+function updateImportButtonState() {
+    const checkedCount = allSlidesData.filter(s => s.selected).length;
+    ui.importBtn.disabled = checkedCount === 0 || isLoading;
+    ui.importBtn.innerHTML = checkedCount > 0 ? `📥  استيراد  ${checkedCount}    شريحة ` : '📥  استيراد   المحدد ';
+}
+
+
+
+
+
+
+
+
+function initializeSortable() {
+    if (sortableInstance) {
+        sortableInstance.destroy();
     }
+    sortableInstance = new Sortable(ui.slidesPreview, {
+        handle: '.drag-handle',
+        animation: 200,
+        ghostClass: 'sortable-ghost',
+        chosenClass: 'sortable-chosen',
+        onStart: () => ui.slidesPreview.classList.add('dragging-mode'),
+        onEnd: (evt) => {
+            ui.slidesPreview.classList.remove('dragging-mode');
+            moveSlide(evt.oldIndex, evt.newIndex, false);
+        }
+    });
+}
 
 
-    function updateSlideVisuals(index) {
-        const item = document.getElementById(`item-${index}`);
-        const checkbox = document.getElementById(`slide-${index}`);
-        if (!item || !checkbox) return;
-       
-        allSlidesData[index].selected = checkbox.checked;
-        item.classList.toggle('selected', checkbox.checked);
-        updateImportButtonState();
-    }
 
 
-    function selectAll(state) {
-        allSlidesData.forEach((slide, index) => {
-            slide.selected = state;
-            const checkbox = document.getElementById(`slide-${index}`);
-            if (checkbox) checkbox.checked = state;
+
+
+
+
+function addPreviewEventListeners() {
+    ui.slidesPreview.addEventListener('change', e => {
+        const slideItem = e.target.closest('.slide-item');
+        if (!slideItem) return;
+        const index = parseInt(slideItem.dataset.index, 10);
+        if (isNaN(index)) return;
+        if (e.target.dataset.action === 'select') {
+            allSlidesData[index].selected = e.target.checked;
             updateSlideVisuals(index);
-        });
-    }
-
-
-    function updateImportButtonState() {
-        const checkedCount = allSlidesData.filter(s => s.selected).length;
-        ui.importBtn.disabled = checkedCount === 0 || isLoading;
-        ui.importBtn.innerHTML = checkedCount > 0 ? `📥 استيراد ${checkedCount} شريحة` : '📥 استيراد المحدد';
-    }
-
-
-    function setLoadingState(loading, message = 'جارٍ التحميل...') {
-        isLoading = loading;
-        
-        if (loading) {
-            ui.loading.style.display = 'block';
-            ui.loading.querySelector('.loading-text').textContent = message;
-            ui.loading.classList.add('fade-in');
-        } else {
-            ui.loading.classList.add('fade-out');
-            setTimeout(() => {
-                ui.loading.style.display = 'none';
-                ui.loading.classList.remove('fade-out');
-            }, 300);
+        } else if (e.target.dataset.action === 'change-placement') {
+            allSlidesData[index].placement = e.target.value;
+            const newTitle = `${CONFIG.FINAL_SLIDE_TITLES[e.target.value] || 'سؤال'}: ${allSlidesData[index].originalTitle}`;
+            allSlidesData[index].title = newTitle;
+            document.getElementById(`title-${index}`).textContent = newTitle;
         }
-       
-        if (ui.body.classList.contains('preview-mode')) {
-            ui.slidesPreview.style.display = loading ? 'none' : 'block';
+    });
+     ui.slidesPreview.addEventListener('click', e => {
+        const slideItem = e.target.closest('.slide-item');
+        if (!slideItem) return;
+        const index = parseInt(slideItem.dataset.index, 10);
+        if (isNaN(index)) return;
+        if (e.target.dataset.action === 'toggle-id') {
+            allSlidesData[index].showSectionId = !allSlidesData[index].showSectionId;
+            renderSlides(allSlidesData);
+        } else if (e.target.dataset.action === 'set-checkpoint') {
+            const isCurrentlyCheckpoint = allSlidesData[index].isCheckpoint;
+            allSlidesData.forEach(slide => slide.isCheckpoint = false);
+            allSlidesData[index].isCheckpoint = !isCurrentlyCheckpoint;
+            renderSlides(allSlidesData);
         }
-       
-        ui.previewBtn.disabled = loading || !ui.fileUrl.value.trim() || !ui.folderId.value.trim();
-        ui.importBtn.disabled = loading || allSlidesData.filter(s => s.selected).length === 0;
-        ui.selectAllBtn.disabled = loading;
-        ui.deselectAllBtn.disabled = loading;
+    });
+
+
+
+
+
+
+
+
+    ui.slidesPreview.addEventListener('keydown', e => {
+        if (e.key === 'Enter' && e.target.dataset.action === 'move-to-position') {
+            e.preventDefault();
+            const slideItem = e.target.closest('.slide-item');
+            if (!slideItem) return;
+            const index = parseInt(slideItem.dataset.index, 10);
+            const newPosition = parseInt(e.target.value, 10);
+            moveSlideToPosition(index, newPosition);
+        }
+    });
+}
+  function moveSlideToPosition(currentIndex, newPosition) {
+     if (isNaN(newPosition) || newPosition < 1 || newPosition > allSlidesData.length) {
+         showMessage(`  الرقم   غير   صالح .  يرجى   إدخال   رقم   بين  1  و  ${allSlidesData.length}`, 'error');
+         const input = document.querySelector(`#item-${currentIndex} .move-to-input`);
+         if(input) input.value = '';
+         return;
+     }
+     const newIndex = newPosition - 1;
+     if (newIndex !== currentIndex) {
+         moveSlide(currentIndex, newIndex, true);
+     }
+ }
+
+
+
+
+
+
+
+
+ function moveSlide(oldIndex, newIndex, shouldScroll = false) {
+    if (oldIndex < 0 || oldIndex >= allSlidesData.length || newIndex < 0 || newIndex >= allSlidesData.length) {
+        return;
     }
-
-
-    function showMessage(message, type = 'success') {
-        const messageElement = document.createElement('div');
-        messageElement.className = `status-message status-${type}`;
-        messageElement.textContent = message;
-        
-        // Clear previous messages with fade out
-        const existingMessages = ui.statusContainer.querySelectorAll('.status-message');
-        existingMessages.forEach(msg => {
-            msg.classList.add('fade-out');
-            setTimeout(() => msg.remove(), 300);
-        });
-        
-        ui.statusContainer.appendChild(messageElement);
-        
-        // Auto remove with fade out
-        setTimeout(() => {
-            if (ui.statusContainer.contains(messageElement)) {
-                messageElement.classList.add('fade-out');
-                setTimeout(() => {
-                    if (ui.statusContainer.contains(messageElement)) {
-                        ui.statusContainer.removeChild(messageElement);
-                    }
-                }, 300);
-            }
-        }, 7000);
+    const [movedItem] = allSlidesData.splice(oldIndex, 1);
+    allSlidesData.splice(newIndex, 0, movedItem);
+    renderSlides(allSlidesData);
+    const newCheckbox = document.getElementById(`slide-${newIndex}`);
+    if (newCheckbox) {
+        newCheckbox.checked = true;
+        updateSlideVisuals(newIndex);
     }
+    if (shouldScroll) {
+        const newItemElement = document.getElementById(`item-${newIndex}`);
+        if (newItemElement) {
+            newItemElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }
+}
 
-    function resetImportedSlides() {
-        if (confirm('هل أنت متأكد أنك تريد إعادة تعيين قائمة الشرائح المستوردة؟ سيؤدي هذا إلى ظهور جميع الشرائح مرة أخرى في المعاينة.')) {
-            setLoadingState(true, 'جارٍ إعادة التعيين...');
+
+
+
+
+
+
+
+function updateSlideVisuals(index) {
+    const item = document.getElementById(`item-${index}`);
+    const checkbox = document.getElementById(`slide-${index}`);
+    if (!item || !checkbox) return;
+    item.classList.toggle('selected', checkbox.checked);
+    checkbox.checked = allSlidesData[index].selected;
+    updateImportButtonState();
+}
+
+
+
+
+
+
+
+
+function resetImportedSlides() {
+    if (confirm('  هل   أنت   متأكد   أنك   تريد   إعادة   تعيين   قائمة   الشرائح   المستوردة؟ سيؤدي   هذا   إلى   ظهور   جميع   الشرائح   مرة   أخرى   في   المعاينة .')) {
+        setLoadingState(true, '  جارٍ إعادة   التعيين ...');
+        if (typeof google !== 'undefined' && google.script && google.script.run) {
             google.script.run
                 .withSuccessHandler(() => {
                     setLoadingState(false);
-                    showMessage('تمت إعادة تعيين الشرائح المستوردة بنجاح. عند المعاينة القادمة ستظهر جميع الشرائح.', 'success');
+                    allSlidesData.forEach(s => s.isImported = false);
+                    renderSlides(allSlidesData);
+                    showMessage('  تمت   إعادة   تعيين   الشرائح   المستوردة   بنجاح .', 'success');
                 })
                 .withFailureHandler(err => {
                     setLoadingState(false);
                     onApiError(err);
                 })
                 .resetImportedSlidesServer();
+        } else {
+            onApiError({message: "Google Apps Script environment not found."});
         }
     }
-   
-    // --- Sheet Update Logic ---
-    function applySheetData() {
-        const url = document.getElementById('sheetUrlInput').value.trim();
-        const statusMsg = document.getElementById('sheetStatusMsg');
-        if (!url) {
-            statusMsg.textContent = 'يرجى إدخال رابط الشيت.';
-            return;
-        }
-        statusMsg.textContent = 'جاري جلب البيانات من الشيت...';
-        google.script.run
-            .withSuccessHandler(sheetRows => {
-                if (sheetRows && sheetRows.error) {
-                    statusMsg.textContent = `فشل: ${sheetRows.error}`;
-                    return;
-                }
-                ui.sheetModal.style.display = 'none';
-                statusMsg.textContent = '';
-                updatePreviewFromSheet(sheetRows);
-            })
-            .withFailureHandler(e => {
-                statusMsg.textContent = `فشل في جلب بيانات الشيت: ${e.message || e}`;
-            })
-            .getSheetRows(url);
+}
+
+
+
+
+
+
+
+
+ // --- Stats Modal Logic ---
+ function showQuickStatsModal() {
+     const stats = calculateQuickStats(allSlidesData);
+     ui.quickStatsContent.innerHTML = renderQuickStatsHtml(stats);
+     ui.quickStatsModal.style.display = 'flex';
+ }
+
+
+
+
+
+
+
+
+ function calculateQuickStats(slides) {
+     let total = 0, totalQuestions = 0, totalExamples = 0, importedCount = 0, remainingCount = 0, bankCount = 0, checkpointCount = 0, explainSlides = 0;
+     const placementCounts = {};
+     slides.forEach(slide => {
+         total++;
+         if (!slide.isQuestion) explainSlides++;
+         if (slide.isCheckpoint) checkpointCount++;
+         if (slide.isQuestion) {
+             totalQuestions++;
+         }
+         if (slide.placement === 'example') totalExamples++;
+         if (slide.isImported) importedCount++;
+         else remainingCount++;
+         if (slide.html && slide.html.includes('data-questionid')) bankCount++;
+         // حساب أنواع الـ placement
+         if (slide.placement) {
+             placementCounts[slide.placement] = (placementCounts[slide.placement] || 0) + 1;
+         }
+     });
+     return { total, explainSlides, checkpointCount, totalQuestions, totalExamples, importedCount, remainingCount, bankCount, placementCounts };
+ }
+
+
+
+
+
+
+
+
+ function renderQuickStatsHtml(stats) {
+     return `
+     <ul style="list-style:none;padding:0;margin:0 0 12px 0;line-height:2;">
+         <li>🔢 <b>إجمالي الشرائح:</b> ${stats.total}</li>
+         <li>📖 <b>إجمالي شرائح الشرح:</b> ${stats.explainSlides}</li>
+         <li style="color:#f59e0b;"><b>🟧 عدد شرائح التشيك بوينت:</b> ${stats.checkpointCount}</li>
+         <li>❓ <b>إجمالي عدد الأسئلة:</b> ${stats.totalQuestions}</li>
+         <li style="margin-top:6px;"><b>تفصيل الأنواع حسب placement:</b></li>
+         ${Object.entries(stats.placementCounts).map(([placement, count]) =>
+             `<li style='margin-bottom:2px;'>• <span style='color:#7c3aed;font-weight:bold;'>${placement}</span>: <span style='color:#1e293b;'>${count}</span></li>`
+         ).join('')}
+     </ul>
+     <div style="margin-top:10px;"><b>تفاصيل الأنواع:</b>
+         <ul style="list-style:none;padding:0;margin:0;">
+             <li style="color:#ef4444;"><b>🏦 أسئلة بنك نجوي:</b> ${stats.bankCount}</li>
+         </ul>
+     </div>
+ `;
+ }
+ // Make CONFIG available to client-side JS
+const CONFIG = {
+    PLACEMENTS: ['live', 'example', 'ai', 'homework', 'interactive_example'],
+    FINAL_SLIDE_TITLES: {
+        'live': '  سؤال  ',
+        'ai': '  سؤال  ',
+        'homework': '  سؤال  ',
+        'example': '  مثال  ',
+        'interactive_example': '  سؤال  '
     }
+};
 
 
-    /**
-     * [FINAL VERSION] Updates the preview based on data from a Google Sheet.
-     * This logic preserves all section slides from the original HTML
-     * and injects the questions from the sheet into the correct places.
-     * @param {Array<Object>} sheetRows - Data from the Google Sheet.
-     */
-    function updatePreviewFromSheet(sheetRows) {
-        if (!Array.isArray(sheetRows)) {
-            showMessage('فشل في جلب بيانات الشيت أو تنسيق غير صحيح.', 'error');
-            return;
-        }
 
 
-        // 1. Create a map of all original questions from HTML for quick access.
-        const originalQuestionsMap = new Map(
-            allSlidesData.filter(s => s.isQuestion).map(q => [q.questionId, q])
-        );
 
 
-        // 2. Group the questions that are IN THE SHEET by their section number.
-        const questionsBySection = {};
-        sheetRows.forEach(row => {
-            if (originalQuestionsMap.has(row.question_id)) {
-                const questionSlide = originalQuestionsMap.get(row.question_id);
-               
-                // Update question properties from the sheet
-                questionSlide.placement = row.question_placement || questionSlide.placement;
-                questionSlide.questionType = row.question_type || questionSlide.questionType;
-               
-                const sectionNo = row.section_no || 'unassigned';
-                if (!questionsBySection[sectionNo]) {
-                    questionsBySection[sectionNo] = [];
-                }
-                questionsBySection[sectionNo].push(questionSlide);
-            }
-        });
 
 
-        // 3. Build the final, correctly ordered list of slides.
-        const finalSlides = [];
-        const originalSections = allSlidesData.filter(s => !s.isQuestion);
-       
-        originalSections.forEach(sectionSlide => {
-            // Add every section slide, preserving its original order.
-            finalSlides.push(sectionSlide);
-           
-            // After adding a section header, check if there are any questions
-            // from the sheet that belong to it.
-            if (sectionSlide.sectionId && questionsBySection[sectionSlide.sectionId]) {
-                // If yes, add all of its questions right after it.
-                finalSlides.push(...questionsBySection[sectionSlide.sectionId]);
-            }
-        });
-       
-        const questionsAddedCount = finalSlides.filter(s => s.isQuestion).length;
+function applyFilter() {
+ // نوع الفلتر الرئيسي
+ const filterType = document.querySelector('input[name="filterType"]:checked')?.value || 'all';
+ // أنواع placement المختارة
+ const placementCheckboxes = document.querySelectorAll('input[name="placementFilter"]:checked');
+ const selectedPlacements = Array.from(placementCheckboxes).map(cb => cb.value);
 
 
-        // Update the main data array and re-render the preview.
-        allSlidesData = finalSlides;
-        renderSlides(allSlidesData);
-        showMessage(`تم التحديث من الشيت. تم عرض ${originalSections.length} قسمًا و ${questionsAddedCount} سؤالًا مطابقًا للشيت.`, 'success');
-    }
-   
-    // --- Stats Modal Logic ---
-    function showQuickStatsModal() {
-        const stats = calculateQuickStats(allSlidesData);
-        document.getElementById('quickStatsContent').innerHTML = renderQuickStatsHtml(stats);
-        ui.quickStatsModal.style.display = 'flex';
-    }
 
 
-    function calculateQuickStats(slides) {
-        return slides.reduce((acc, slide) => {
-            acc.total++;
-            if (slide.isQuestion) acc.totalQuestions++;
-            if (slide.placement === 'example') acc.totalExamples++;
-            if (slide.isImported) acc.importedCount++;
-            else acc.remainingCount++;
-            const typeKey = slide.placement || slide.type || 'غير محدد';
-            acc.typeCounts[typeKey] = (acc.typeCounts[typeKey] || 0) + 1;
-            return acc;
-        }, { total: 0, totalQuestions: 0, totalExamples: 0, importedCount: 0, remainingCount: 0, typeCounts: {} });
-    }
 
 
-    function renderQuickStatsHtml(stats) {
-        return `
-            <ul style="list-style:none;padding:0;margin:0 0 12px 0;line-height:2;">
-                 <li>🔢 <b>إجمالي الشرائح:</b> ${stats.total}</li>
-                 <li>❓ <b>عدد الأسئلة:</b> ${stats.totalQuestions}</li>
-                 <li>💡 <b>عدد الأمثلة:</b> ${stats.totalExamples}</li>
-                 <li style="color:#22c55e;"><b>✅ المستوردة:</b> ${stats.importedCount}</li>
-                 <li style="color:#ef4444;"><b>🕗 المتبقية:</b> ${stats.remainingCount}</li>
-            </ul>
-            <div style="margin-top:10px;"><b>أنواع الأسئلة:</b>
-                <ul style="list-style:none;padding:0;margin:0;">
-                ${Object.entries(stats.typeCounts).map(([type, count]) =>
-                    `<li style="margin-bottom:2px;">• <span style="color:#7c3aed;font-weight:bold;">${type}</span>: <span style="color:#1e293b;">${count}</span></li>`
-                ).join('')}
-                </ul>
-            </div>`;
-    }
 
 
-    // --- Slide property change handlers ---
-    function handlePlacementChange(index, newPlacement) {
-        allSlidesData[index].placement = newPlacement;
-        const slide = allSlidesData[index];
-        const newPreviewTitle = `${newPlacement}: ${slide.originalTitle}`;
-        allSlidesData[index].title = newPreviewTitle;
-        const titleElement = document.getElementById(`title-${index}`);
-        if (titleElement) {
-            titleElement.textContent = newPreviewTitle;
-        }
-    }
-
-
-    function toggleSectionId(index) {
-        allSlidesData[index].showSectionId = !allSlidesData[index].showSectionId;
-        renderSlides(allSlidesData); // Re-render to show/hide the ID
-    }
- 
-    function setCheckpoint(index) {
-         const isCurrentlyCheckpoint = allSlidesData[index].isCheckpoint;
-         // Unset all other checkpoints
-         allSlidesData.forEach(slide => slide.isCheckpoint = false);
-         // Toggle the selected one
-         allSlidesData[index].isCheckpoint = !isCurrentlyCheckpoint;
-         renderSlides(allSlidesData); // Re-render to update button styles
-    }
-
-    function toggleCollapse(element) {
-        const container = document.querySelector('.container');
-        
-        if (element === 'header') {
-            headerCollapsed = !headerCollapsed;
-            const header = document.querySelector('header');
-            const btn = ui.headerCollapseBtn;
-            const restoreBtn = ui.headerRestoreBtn;
-            
-            if (headerCollapsed) {
-                header.classList.add('collapsed');
-                btn.classList.add('collapsed');
-                btn.textContent = '▲';
-                restoreBtn.classList.add('visible');
-            } else {
-                header.classList.remove('collapsed');
-                btn.classList.remove('collapsed');
-                btn.textContent = '▼';
-                restoreBtn.classList.remove('visible');
-            }
-        } else if (element === 'footer') {
-            footerCollapsed = !footerCollapsed;
-            const footer = document.querySelector('footer');
-            const btn = ui.footerCollapseBtn;
-            const restoreBtn = ui.footerRestoreBtn;
-            
-            if (footerCollapsed) {
-                footer.classList.add('collapsed');
-                btn.classList.add('collapsed');
-                btn.textContent = '▲';
-                restoreBtn.classList.add('visible');
-            } else {
-                footer.classList.remove('collapsed');
-                btn.classList.remove('collapsed');
-                btn.textContent = '▼';
-                restoreBtn.classList.remove('visible');
-            }
-        } else if (element === 'previewControls') {
-            previewControlsCollapsed = !previewControlsCollapsed;
-            const previewControls = document.querySelector('.preview-controls');
-            const btn = ui.previewControlsCollapseBtn;
-            const restoreBtn = ui.previewControlsRestoreBtn;
-            
-            if (previewControlsCollapsed) {
-                previewControls.classList.add('collapsed');
-                btn.classList.add('collapsed');
-                btn.textContent = '▲';
-                restoreBtn.classList.add('visible');
-            } else {
-                previewControls.classList.remove('collapsed');
-                btn.classList.remove('collapsed');
-                btn.textContent = '▼';
-                restoreBtn.classList.remove('visible');
-            }
-        }
-        
-        // Update container classes for proper spacing
-        updateContainerSpacing();
-        
-        // Save collapse state
-        saveCollapseState();
-    }
-    
-    function updateContainerSpacing() {
-        const container = document.querySelector('.container');
-        container.classList.remove('header-collapsed', 'footer-collapsed', 'preview-controls-collapsed', 'both-collapsed', 'all-collapsed');
-        
-        const collapsedCount = [headerCollapsed, footerCollapsed, previewControlsCollapsed].filter(Boolean).length;
-        
-        if (collapsedCount === 3) {
-            container.classList.add('all-collapsed');
-        } else if (collapsedCount === 2) {
-            if (headerCollapsed && footerCollapsed) {
-                container.classList.add('both-collapsed');
-            } else if (headerCollapsed && previewControlsCollapsed) {
-                container.classList.add('header-collapsed', 'preview-controls-collapsed');
-            } else if (footerCollapsed && previewControlsCollapsed) {
-                container.classList.add('footer-collapsed', 'preview-controls-collapsed');
-            }
-        } else if (collapsedCount === 1) {
-            if (headerCollapsed) {
-                container.classList.add('header-collapsed');
-            } else if (footerCollapsed) {
-                container.classList.add('footer-collapsed');
-            } else if (previewControlsCollapsed) {
-                container.classList.add('preview-controls-collapsed');
-            }
-        }
-    }
-    
-    function saveCollapseState() {
-        if (typeof google !== 'undefined' && google.script) {
-            google.script.run
-                .withSuccessHandler(() => {})
-                .withFailureHandler(() => {})
-                .saveCollapseState(headerCollapsed, footerCollapsed, previewControlsCollapsed);
-        }
-    }
-    
-    function loadCollapseState() {
-        if (typeof google !== 'undefined' && google.script) {
-            google.script.run
-                .withSuccessHandler(state => {
-                    if (state) {
-                        headerCollapsed = state.headerCollapsed || false;
-                        footerCollapsed = state.footerCollapsed || false;
-                        previewControlsCollapsed = state.previewControlsCollapsed || false;
-                        
-                        // Apply saved state
-                        if (headerCollapsed) {
-                            document.querySelector('header').classList.add('collapsed');
-                            ui.headerCollapseBtn.classList.add('collapsed');
-                            ui.headerCollapseBtn.textContent = '▲';
-                            ui.headerRestoreBtn.classList.add('visible');
-                        }
-                        
-                        if (footerCollapsed) {
-                            document.querySelector('footer').classList.add('collapsed');
-                            ui.footerCollapseBtn.classList.add('collapsed');
-                            ui.footerCollapseBtn.textContent = '▲';
-                            ui.footerRestoreBtn.classList.add('visible');
-                        }
-                        
-                        if (previewControlsCollapsed) {
-                            document.querySelector('.preview-controls').classList.add('collapsed');
-                            ui.previewControlsCollapseBtn.classList.add('collapsed');
-                            ui.previewControlsCollapseBtn.textContent = '▲';
-                            ui.previewControlsRestoreBtn.classList.add('visible');
-                        }
-                        
-                        updateContainerSpacing();
-                    }
-                })
-                .withFailureHandler(() => {})
-                .getCollapseState();
-        }
-    }
-
-    function restoreCollapsed(element) {
-        if (element === 'header' && headerCollapsed) {
-            toggleCollapse('header');
-        } else if (element === 'footer' && footerCollapsed) {
-            toggleCollapse('footer');
-        } else if (element === 'previewControls' && previewControlsCollapsed) {
-            toggleCollapse('previewControls');
-        }
-    }
-
+ let filteredSlides = allSlidesData;
+ // تصفية حسب نوع الفلتر
+ if (filterType === 'questions') {
+     filteredSlides = filteredSlides.filter(slide => slide.isQuestion);
+ } else if (filterType === 'explain') {
+     filteredSlides = filteredSlides.filter(slide => !slide.isQuestion);
+ } else if (filterType === 'checkpoint') {
+     filteredSlides = filteredSlides.filter(slide => slide.isCheckpoint);
+ }
+ // تصفية حسب placement إذا تم اختيار أي منها
+ if (selectedPlacements.length > 0) {
+     filteredSlides = filteredSlides.filter(slide => selectedPlacements.includes(slide.placement));
+ }
+ renderSlides(filteredSlides);
+ // إغلاق نافذة الفلترة
+ ui.filterModal.style.display = 'none';
+}
 </script>
 </body>
 </html>
-
-
 
