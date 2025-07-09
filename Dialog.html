@@ -435,14 +435,26 @@ function handleSlideChange(e) {
         allSlidesData[index].selected = e.target.checked;
         updateSlideVisuals(index);
     } else if (action === 'change-placement') {
-        allSlidesData[index].placement = e.target.value;
+        const newPlacement = e.target.value;
+        allSlidesData[index].placement = newPlacement;
+
+        // Update homework status based on placement
+        if (newPlacement === 'example' || newPlacement === 'interactive example' || newPlacement === 'homework') {
+            allSlidesData[index].homework = true;
+        } else {
+            allSlidesData[index].homework = false;
+        }
+
         let originalTitle = allSlidesData[index].originalTitle;
-        const newTitle = `${CONFIG.FINAL_SLIDE_TITLES[e.target.value] || 'سؤال'}: ${originalTitle}`;
+        const newTitle = `${CONFIG.FINAL_SLIDE_TITLES[newPlacement] || 'سؤال'}: ${originalTitle}`;
         allSlidesData[index].title = newTitle;
         slideItem.querySelector(`#title-${index}`).textContent = newTitle;
-    } else if (action === 'change-homework') {
-        allSlidesData[index].homework = (e.target.value === 'homework');
+
+        // Since renderSlides is not called, if you had visual indicators for 'homework'
+        // that were separate from placement, they might need manual update here.
+        // However, we removed the separate homework dropdown.
     }
+    // Removed 'change-homework' else if block
 }
 
 function handleSlideClick(e) {
@@ -558,7 +570,21 @@ function onPreviewSuccess(result) {
     exitPreviewMode();
     return;
   }
-  allSlidesData = result.map(slide => ({ ...slide, selected: false, notInSheet: false }));
+  allSlidesData = result.map(slide => {
+    const initialPlacement = slide.placement; // Placement from server
+    let initialHomework = false;
+    if (initialPlacement === 'example' || initialPlacement === 'interactive example' || initialPlacement === 'homework') {
+        initialHomework = true;
+    }
+
+    return {
+      ...slide,
+      selected: false,
+      notInSheet: false,
+      isCheckpoint: false, // Ensure no slide is a checkpoint by default on initial load
+      homework: initialHomework // Set initial homework status based on initial placement
+    };
+  });
   renderSlides(allSlidesData);
   enterPreviewMode();
   showMessage(`تم تحميل ${result.length} شريحة. حدد ما تريد ثم اضغط استيراد.`, 'success');
@@ -725,11 +751,11 @@ function renderSlides(slides) {
         </ul>` : ''}
       </div>` : '';
 
-    const homeworkHtml = slide.isQuestion ? `
-      <select class="homework-select" data-action="change-homework">
-        <option value="homework" ${slide.homework ? 'selected' : ''}>واجب (homework)</option>
-        <option value="not_homework" ${!slide.homework ? 'selected' : ''}>ليس واجب (not_homework)</option>
-      </select>` : '';
+    // const homeworkHtml = slide.isQuestion ? `
+    //   <select class="homework-select" data-action="change-homework">
+    //     <option value="homework" ${slide.homework ? 'selected' : ''}>واجب (homework)</option>
+    //     <option value="not_homework" ${!slide.homework ? 'selected' : ''}>ليس واجب (not_homework)</option>
+    //   </select>` : ''; // Removed homeworkHtml
       
     const placementHtml = slide.isQuestion ? `
       <select class="placement-select" data-action="change-placement">
