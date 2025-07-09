@@ -386,7 +386,7 @@ function setupEventListeners() {
   ui.updateFromSheetBtn.addEventListener('click', () => ui.sheetModal.style.display = 'flex');
   ui.applySheetBtn.addEventListener('click', applySheetData);
   ui.quickStatsBtn.addEventListener('click', showQuickStatsModal);
-  ui.confirmImportBtn.addEventListener('click', doImportSlides);
+  // Removed: ui.confirmImportBtn.addEventListener('click', doImportSlides); // Will be handled by showConfirmImportModal
   ui.cancelImportBtn.addEventListener('click', () => ui.confirmImportModal.style.display = 'none');
   ui.filterBtn.addEventListener('click', () => ui.filterModal.style.display = 'flex');
   ui.applyFilterBtn.addEventListener('click', applyFilter);
@@ -435,14 +435,26 @@ function handleSlideChange(e) {
         allSlidesData[index].selected = e.target.checked;
         updateSlideVisuals(index);
     } else if (action === 'change-placement') {
-        allSlidesData[index].placement = e.target.value;
+        const newPlacement = e.target.value;
+        allSlidesData[index].placement = newPlacement;
+
+        // Update homework status based on placement
+        if (newPlacement === 'example' || newPlacement === 'interactive example' || newPlacement === 'homework') {
+            allSlidesData[index].homework = true;
+        } else {
+            allSlidesData[index].homework = false;
+        }
+
         let originalTitle = allSlidesData[index].originalTitle;
-        const newTitle = `${CONFIG.FINAL_SLIDE_TITLES[e.target.value] || 'سؤال'}: ${originalTitle}`;
+        const newTitle = `${CONFIG.FINAL_SLIDE_TITLES[newPlacement] || 'سؤال'}: ${originalTitle}`;
         allSlidesData[index].title = newTitle;
         slideItem.querySelector(`#title-${index}`).textContent = newTitle;
-    } else if (action === 'change-homework') {
-        allSlidesData[index].homework = (e.target.value === 'homework');
+
+        // Since renderSlides is not called, if you had visual indicators for 'homework'
+        // that were separate from placement, they might need manual update here.
+        // However, we removed the separate homework dropdown.
     }
+    // Removed 'change-homework' else if block
 }
 
 function handleSlideClick(e) {
@@ -558,7 +570,21 @@ function onPreviewSuccess(result) {
     exitPreviewMode();
     return;
   }
-  allSlidesData = result.map(slide => ({ ...slide, selected: false, notInSheet: false }));
+  allSlidesData = result.map(slide => {
+    const initialPlacement = slide.placement; // Placement from server
+    let initialHomework = false;
+    if (initialPlacement === 'example' || initialPlacement === 'interactive example' || initialPlacement === 'homework') {
+        initialHomework = true;
+    }
+
+    return {
+      ...slide,
+      selected: false,
+      notInSheet: false,
+      isCheckpoint: false, // Ensure no slide is a checkpoint by default on initial load
+      homework: initialHomework // Set initial homework status based on initial placement
+    };
+  });
   renderSlides(allSlidesData);
   enterPreviewMode();
   showMessage(`تم تحميل ${result.length} شريحة. حدد ما تريد ثم اضغط استيراد.`, 'success');
@@ -596,13 +622,35 @@ function handleImport() {
     }
 }
 
+// --- Added missing function ---
+function showConfirmImportModal(slidesToConfirm) {
+    if (!slidesToConfirm || slidesToConfirm.length === 0) {
+        showMessage('لم يتم تحديد شرائح للاستيراد.', 'error');
+        return;
+    }
+    ui.confirmImportContent.innerHTML = `هل أنت متأكد أنك تريد استيراد <strong>${slidesToConfirm.length}</strong> شريحة؟`;
+    ui.confirmImportModal.style.display = 'flex';
+
+    // Set the onclick handler for the confirm button dynamically
+    ui.confirmImportBtn.onclick = () => {
+        doImportSlides(slidesToConfirm);
+    };
+}
+// --- End of added function ---
+
 function doImportSlides(slidesToImport) {
     ui.confirmImportModal.style.display = 'none';
 
-    const selectedSlides = allSlidesData.filter(slide => slide.selected);
-    if (selectedSlides.length === 0) return;
+    // If slidesToImport is not provided (e.g. if old event listener was somehow still active),
+    // default to all selected, but ideally this path should not be taken.
+    const slidesToProcess = slidesToImport || allSlidesData.filter(slide => slide.selected);
 
-    selectedSlides.forEach(slide => {
+    if (slidesToProcess.length === 0) {
+        showMessage('لم يتم تحديد شرائح للاستيراد.', 'error');
+        return;
+    }
+
+    slidesToProcess.forEach(slide => {
         if (typeof slide.homework === 'undefined') slide.homework = false;
         if (slide.placement === 'example' || slide.placement === 'interactive example') {
             slide.homework = true;
@@ -613,11 +661,11 @@ function doImportSlides(slidesToImport) {
         }
     });
 
-    setLoadingState(true, `جارٍ استيراد ${selectedSlides.length} شريحة...`);
+    setLoadingState(true, `جارٍ استيراد ${slidesToProcess.length} شريحة...`);
     google.script.run
         .withSuccessHandler(onImportSuccess)
         .withFailureHandler(onApiError)
-        .importSelectedSlides(selectedSlides, ui.folderId.value.trim());
+        .importSelectedSlides(slidesToProcess, ui.folderId.value.trim());
 }
 
 function onImportSuccess(importedIds) {
@@ -703,11 +751,11 @@ function renderSlides(slides) {
         </ul>` : ''}
       </div>` : '';
 
-    const homeworkHtml = slide.isQuestion ? `
-      <select class="homework-select" data-action="change-homework">
-        <option value="homework" ${slide.homework ? 'selected' : ''}>واجب (homework)</option>
-        <option value="not_homework" ${!slide.homework ? 'selected' : ''}>ليس واجب (not_homework)</option>
-      </select>` : '';
+    // const homeworkHtml = slide.isQuestion ? `
+    //   <select class="homework-select" data-action="change-homework">
+    //     <option value="homework" ${slide.homework ? 'selected' : ''}>واجب (homework)</option>
+    //     <option value="not_homework" ${!slide.homework ? 'selected' : ''}>ليس واجب (not_homework)</option>
+    //   </select>` : ''; // Removed homeworkHtml
       
     const placementHtml = slide.isQuestion ? `
       <select class="placement-select" data-action="change-placement">
