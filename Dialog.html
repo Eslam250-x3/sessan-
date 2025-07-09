@@ -386,7 +386,7 @@ function setupEventListeners() {
   ui.updateFromSheetBtn.addEventListener('click', () => ui.sheetModal.style.display = 'flex');
   ui.applySheetBtn.addEventListener('click', applySheetData);
   ui.quickStatsBtn.addEventListener('click', showQuickStatsModal);
-  ui.confirmImportBtn.addEventListener('click', doImportSlides);
+  // Removed: ui.confirmImportBtn.addEventListener('click', doImportSlides); // Will be handled by showConfirmImportModal
   ui.cancelImportBtn.addEventListener('click', () => ui.confirmImportModal.style.display = 'none');
   ui.filterBtn.addEventListener('click', () => ui.filterModal.style.display = 'flex');
   ui.applyFilterBtn.addEventListener('click', applyFilter);
@@ -596,13 +596,35 @@ function handleImport() {
     }
 }
 
+// --- Added missing function ---
+function showConfirmImportModal(slidesToConfirm) {
+    if (!slidesToConfirm || slidesToConfirm.length === 0) {
+        showMessage('لم يتم تحديد شرائح للاستيراد.', 'error');
+        return;
+    }
+    ui.confirmImportContent.innerHTML = `هل أنت متأكد أنك تريد استيراد <strong>${slidesToConfirm.length}</strong> شريحة؟`;
+    ui.confirmImportModal.style.display = 'flex';
+
+    // Set the onclick handler for the confirm button dynamically
+    ui.confirmImportBtn.onclick = () => {
+        doImportSlides(slidesToConfirm);
+    };
+}
+// --- End of added function ---
+
 function doImportSlides(slidesToImport) {
     ui.confirmImportModal.style.display = 'none';
 
-    const selectedSlides = allSlidesData.filter(slide => slide.selected);
-    if (selectedSlides.length === 0) return;
+    // If slidesToImport is not provided (e.g. if old event listener was somehow still active),
+    // default to all selected, but ideally this path should not be taken.
+    const slidesToProcess = slidesToImport || allSlidesData.filter(slide => slide.selected);
 
-    selectedSlides.forEach(slide => {
+    if (slidesToProcess.length === 0) {
+        showMessage('لم يتم تحديد شرائح للاستيراد.', 'error');
+        return;
+    }
+
+    slidesToProcess.forEach(slide => {
         if (typeof slide.homework === 'undefined') slide.homework = false;
         if (slide.placement === 'example' || slide.placement === 'interactive example') {
             slide.homework = true;
@@ -613,11 +635,11 @@ function doImportSlides(slidesToImport) {
         }
     });
 
-    setLoadingState(true, `جارٍ استيراد ${selectedSlides.length} شريحة...`);
+    setLoadingState(true, `جارٍ استيراد ${slidesToProcess.length} شريحة...`);
     google.script.run
         .withSuccessHandler(onImportSuccess)
         .withFailureHandler(onApiError)
-        .importSelectedSlides(selectedSlides, ui.folderId.value.trim());
+        .importSelectedSlides(slidesToProcess, ui.folderId.value.trim());
 }
 
 function onImportSuccess(importedIds) {
