@@ -1,38 +1,37 @@
 <!DOCTYPE html>
 <!--
-Final Version 2.8.9:
-- Fixed critical UI initialization bug by moving the UI elements cache inside DOMContentLoaded.
-- Corrected a minor HTML error in the filter generation logic.
-- UI should now be fully responsive.
+Final Version 2.8.2:
+- This version is stable and includes all features and fixes.
+- No new changes were needed in this file. Version number updated for consistency.
 -->
 <html dir="rtl" lang="ar">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>مستورد الشرائح التفاعلي</title>
+<title>    مستورد   الشرائح   التفاعلي  </title>
 <!-- SortableJS Library for Drag and Drop -->
 <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 <style>
 :root {
-  --primary-start: #667eea;
-  --primary-end: #764ba2;
-  --title-bg: #0B5FA5;
-  --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-  --card-bg: rgba(255, 255, 255, 0.95);
-  --border-color: #e5e7eb;
-  --text-primary: #1f2937;
-  --text-secondary: #6b7280;
-  --status-success-bg: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
-  --status-success-text: #065f46;
-  --status-error-bg: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
-  --status-error-text: #991b1b;
-  --shadow-light: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  --shadow-medium: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-  --imported-red: #ef4444;
-  --not-in-sheet-bg: #fff1f2;
-  --not-in-sheet-border: #ffb6c1;
-  --checkpoint-active-bg: #f59e0b;
-  --checkpoint-active-border: #d97706;
+   --primary-start: #667eea;
+   --primary-end: #764ba2;
+   --title-bg: #0072b4;
+   --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+   --card-bg: rgba(255, 255, 255, 0.95);
+   --border-color: #e5e7eb;
+   --text-primary: #1f2937;
+   --text-secondary: #6b7280;
+   --status-success-bg: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+   --status-success-text: #065f46;
+   --status-error-bg: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+   --status-error-text: #991b1b;
+   --shadow-light: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+   --shadow-medium: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+   --imported-red: #ef4444;
+   --not-in-sheet-bg: #fff1f2;
+   --not-in-sheet-border: #ffb6c1;
+   --checkpoint-active-bg: #f59e0b;
+   --checkpoint-active-border: #d97706;
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body, html { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background: var(--bg-gradient); color: var(--text-primary); height: 100%; overflow: hidden; }
@@ -102,936 +101,4173 @@ footer { background: var(--card-bg); border-radius: 16px; padding: 20px; backdro
 .html-source-item { display: flex; gap: 10px; margin-bottom: 10px; }
 .html-source-item input { flex-grow: 1; direction: ltr; }
 .btn-icon { padding: 8px; min-width: 40px; background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
-.slide-index-badge { position: absolute; top: 6px; left: 6px; background: #0B5FA5; color: #fff; font-size: 15px; font-weight: bold; padding: 2px 10px; border-radius: 12px; opacity: 0; pointer-events: none; z-index: 20; transition: opacity 0.2s; }
-.slide-item:hover .slide-index-badge { opacity: 1; }
-/* Bank & Unlinked Badges */
-.bank-badge, .unlinked-badge, .linked-badge { border-radius: 8px; font-size: 12px; font-weight: bold; padding: 2px 8px; margin: 0 6px; vertical-align: middle; border: 1px solid transparent; box-shadow: 0 1px 2px rgba(0,0,0,0.07); }
-.bank-badge { color: #fff; background: #ef4444; }
-.unlinked-badge { color: #fff; background: #f59e0b; border-color: #d97706; cursor: pointer; }
-.linked-badge { color: #fff; background: #22c55e; border-color: #16a34a; }
+/* Dragging View Styles */
+.slides-preview.dragging-mode { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; align-content: flex-start; padding: 12px; }
+.slides-preview.dragging-mode .slide-item { width: 100%; height: 160px; padding: 8px; gap: 8px; justify-content: center; align-items: center; border: 2px solid var(--border-color); background: white; overflow: hidden; margin-bottom: 0; border-radius: 12px; box-shadow: var(--shadow-light); transition: all 0.2s ease; position: relative; }
+.slides-preview.dragging-mode .slide-item.selected { border-color: var(--primary-start); background: rgba(102, 126, 234, 0.08); }
+.slides-preview .icon-view { display: none; }
+.slides-preview.dragging-mode .normal-view { display: none; }
+.slides-preview.dragging-mode .icon-view { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%; text-align: center; }
+.slide-icon-preview { width: 80px; height: 60px; border-radius: 8px; background-color: #f0f2f5; background-size: cover; background-position: center; background-repeat: no-repeat; border: 1px solid #dee2e6; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); font-size: 18px; font-weight: bold; margin-bottom: 8px; flex-shrink: 0; }
+.slide-title-preview { font-size: 11px; font-weight: 600; color: var(--text-primary); text-align: center; width: 100%; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.3; }
+.sortable-ghost { opacity: 1 !important; background: rgba(102, 126, 234, 0.1) !important; border: 2px dashed var(--primary-start) !important; border-radius: 12px !important; box-shadow: none !important; }
+.sortable-ghost > * { visibility: hidden; }
+.sortable-chosen { cursor: grabbing !important; opacity: 0.8 !important; transform: scale(0.95) rotate(3deg) !important; box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2) !important; z-index: 1000 !important; }
+.slide-index-badge {
+   position: absolute;
+   top: 6px;
+   left: 6px;
+   background: #0B5FA5;
+   color: #fff;
+   font-size: 15px;
+   font-weight: bold;
+   padding: 2px 10px;
+   border-radius: 12px;
+   opacity: 0;
+   pointer-events: none;
+   z-index: 20;
+   transition: opacity 0.2s;
+}
+.slide-item:hover .slide-index-badge {
+   opacity: 1;
+}
+/* CSS للبنك */
+.bank-badge {
+   color: #fff;
+   background: #ef4444;
+   border-radius: 8px;
+   font-size: 12px;
+   font-weight: bold;
+   padding: 2px 8px;
+   margin-right: 6px;
+   margin-left: 6px;
+   vertical-align: middle;
+}
+/* أضف CSS لشارة unlinked البرتقالية */
+.unlinked-badge {
+   color: #fff;
+   background: #f59e0b;
+   border-radius: 8px;
+   font-size: 12px;
+   font-weight: bold;
+   padding: 2px 8px;
+   margin-right: 6px;
+   margin-left: 6px;
+   vertical-align: middle;
+   border: 1px solid #d97706;
+   box-shadow: 0 1px 2px rgba(0,0,0,0.07);
+   cursor: pointer;
+}
+.linked-badge {
+   color: #fff;
+   background: #22c55e;
+   border-radius: 8px;
+   font-size: 12px;
+   font-weight: bold;
+   padding: 2px 8px;
+   margin-right: 6px;
+   margin-left: 6px;
+   vertical-align: middle;
+   border: 1px solid #16a34a;
+   box-shadow: 0 1px 2px rgba(0,0,0,0.07);
+}
 </style>
 </head>
 <body>
-
 <div class="container">
-  <header>
-    <h1>📊 مستورد الشرائح التفاعلي (v2.8.9)</h1>
-    <p class="subtitle">استيراد الشرائح من عدة مصادر HTML إلى Google Slides</p>
-  </header>
-  <main>
-    <div class="form-container">
-      <div class="form-grid">
-        <div class="input-group">
-          <label for="manageHtmlSourcesBtn">📚 مصادر ملفات HTML</label>
-          <button id="manageHtmlSourcesBtn" class="btn btn-secondary">إدارة المصادر (<span id="sourceCount">0</span>)</button>
-        </div>
-        <div class="input-group">
-          <label for="folderId">📁 معرف مجلد الصور</label>
-          <input type="text" id="folderId" placeholder="ID المجلد الذي يحتوي الصور">
-        </div>
+<header>
+   <h1>   📊  مستورد   الشرائح   التفاعلي  (v2.8.2) </h1>
+   <p class="subtitle">    استيراد   الشرائح   من   عدة   مصادر  HTML  إلى  Google Slides </p>
+</header>
+<main>
+   <div class="form-container">
+       <div class="form-grid">
+           <div class="input-group">
+               <label for="manageHtmlSourcesBtn">   📚  مصادر   ملفات  HTML </label>
+               <button id="manageHtmlSourcesBtn" class="btn btn-secondary">    إدارة   المصادر  (<span id="sourceCount">0</span>) </button>
+           </div>
+           <div class="input-group">
+               <label for="folderId">   📁  معرف   مجلد   الصور  </label>
+               <input type="text" id="folderId" placeholder="ID_  المجلد  _  الذي  _  يحتوي  _  الصور  ">
+           </div>
+       </div>
+       <button id="previewBtn" class="btn btn-primary" style="width: 100%;" disabled>   🔍  معاينة   الشرائح  </button>
+   </div>
+   <div class="preview-header">
+       <button id="backToFormBtn" class="btn btn-secondary">   ✏️  الرجوع   وتعديل   المدخلات  </button>
+       <button id="filterBtn" class="btn btn-secondary" style="margin-right:12px;">🔎 تصفية</button>
+       <button id="unlinkedCountBtn" class="btn btn-secondary" style="margin-right:12px; background:#f59e0b; color:#fff; font-weight:bold; border:2px solid #d97706; display:none;">
+         🟧 <span id="unlinkedCount">0</span> Unlinked
+       </button>
+       <button id="toggleHeaderFooterBtn" class="btn btn-secondary" style="margin-right:12px; background:#e5e7eb; color:#0B5FA5; font-weight:bold;">إخفاء الهيدر والفوتر</button>
+   </div>
+   <div id="statusContainer"></div>
+   <div id="loading" class="loading-overlay" style="display: none;">
+       <div class="spinner"></div>
+       <div class="loading-text">    جارٍ تحميل   الشرائح  ...</div>
+   </div>
+   <div id="slidesPreview" class="slides-preview" style="display: none;"></div>
+</main>
+<footer>
+   <div class="controls">
+       <div class="control-group">
+           <button id="selectAllBtn" class="btn btn-secondary">   ✅  تحديد   الكل  </button>
+           <button id="deselectAllBtn" class="btn btn-secondary">   ❌  إلغاء   التحديد  </button>
+           <button id="resetImportedBtn" class="btn btn-secondary" style="color:#ef4444;border-color:#ef4444;">   🔄  إعادة   تعيين   المستورد  </button>
+           <button id="autoSelectBtn" class="btn btn-secondary" style="background:#e0e7ff;color:#0B5FA5;font-weight:bold;border:2px solid #0B5FA5;">⚡ تحديد تلقائي متقدم</button>
+       </div>
+       <button id="quickStatsBtn" class="btn btn-secondary" style="background:#e0e7ff;color:#7c3aed;font-weight:bold;border:2px solid #a5b4fc;">  📊  إحصائيات   سريعة </button>
+       <button id="updateFromSheetBtn" class="btn btn-secondary" style="background:#e0e7ff;color:#0B5FA5;font-weight:bold;border:2px solid #0B5FA5;">   🔗  تحديث   من  Google Sheet </button>
+       <button id="importBtn" class="btn btn-primary" disabled>   📥  استيراد   المحدد  </button>
+   </div>
+</footer>
+
+
+<!-- Auto Select Modal -->
+<div id="autoSelectModal" class="modal" style="display:none;">
+  <div class="modal-content" style="min-width:320px;max-width:90vw;">
+    <div class="modal-header">
+      <h2 class="modal-title">⚡ تحديد تلقائي متقدم</h2>
+      <button class="modal-close-btn" data-modal-id="autoSelectModal">✖</button>
+    </div>
+    <div class="modal-body" style="padding:16px;display:flex;flex-direction:column;gap:12px;">
+      <label for="autoSelectIdsArea">أدخل قائمة IDs (واحد في كل سطر):</label>
+      <textarea id="autoSelectIdsArea" style="width:100%;height:120px;direction:ltr;"></textarea>
+      <div style="margin:8px 0 4px 0;">
+        <label for="autoSelectAllPlacement"><b>تعيين placement للجميع:</b></label>
+        <select id="autoSelectAllPlacement" style="margin-right:8px;"></select>
       </div>
-      <button id="previewBtn" class="btn btn-primary" style="width: 100%;" disabled>🔍 معاينة الشرائح</button>
+      <div id="autoSelectPlacementsContainer" style="margin-top:10px;"></div>
     </div>
-    <div class="preview-header">
-      <button id="backToFormBtn" class="btn btn-secondary">✏️ الرجوع وتعديل المدخلات</button>
-      <button id="filterBtn" class="btn btn-secondary" style="margin-right:12px;">🔎 تصفية</button>
-      <button id="unlinkedCountBtn" class="btn btn-secondary" style="margin-right:12px; background:#f59e0b; color:#fff; font-weight:bold; border:2px solid #d97706; display:none;">
-        🟧 <span id="unlinkedCount">0</span> Unlinked
-      </button>
-      <button id="toggleHeaderFooterBtn" class="btn btn-secondary" style="margin-right:12px; background:#e5e7eb; color:#0B5FA5; font-weight:bold;">إخفاء الهيدر والفوتر</button>
+    <div class="modal-footer" style="display:flex;gap:12px;justify-content:flex-end;">
+      <button id="autoSelectApplyBtn" class="btn btn-primary">تطبيق</button>
     </div>
-    <div id="statusContainer"></div>
-    <div id="loading" class="loading-overlay" style="display: none;">
-      <div class="spinner"></div>
-      <div class="loading-text">جارٍ تحميل الشرائح...</div>
-    </div>
-    <div id="slidesPreview" class="slides-preview" style="display: none;"></div>
-  </main>
-  <footer>
-    <div class="controls">
-      <div class="control-group">
-        <button id="selectAllBtn" class="btn btn-secondary">✅ تحديد الكل</button>
-        <button id="deselectAllBtn" class="btn btn-secondary">❌ إلغاء التحديد</button>
-        <button id="resetImportedBtn" class="btn btn-secondary" style="color:#ef4444;border-color:#ef4444;">🔄 إعادة تعيين المستورد</button>
-      </div>
-      <button id="quickStatsBtn" class="btn btn-secondary" style="background:#e0e7ff;color:#7c3aed;font-weight:bold;border:2px solid #a5b4fc;">📊 إحصائيات سريعة</button>
-      <button id="updateFromSheetBtn" class="btn btn-secondary" style="background:#e0e7ff;color:#0B5FA5;font-weight:bold;border:2px solid #0B5FA5;">🔗 تحديث من Google Sheet</button>
-      <button id="importBtn" class="btn btn-primary" disabled>📥 استيراد المحدد</button>
-    </div>
-  </footer>
+  </div>
 </div>
+
 
 <!-- HTML Sources Modal -->
 <div id="htmlSourcesModal" class="modal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h2 class="modal-title">إدارة مصادر HTML</h2>
-      <button class="modal-close-btn" data-modal-id="htmlSourcesModal">✖</button>
-    </div>
-    <div class="modal-body" id="htmlSourcesContainer"></div>
-    <div class="modal-footer" style="margin-top: 20px; display: flex; gap: 10px; justify-content: space-between;">
-      <button id="addHtmlSourceBtn" class="btn btn-secondary">➕ إضافة مصدر</button>
-      <button id="saveHtmlSourcesBtn" class="btn btn-primary">حفظ</button>
-    </div>
-  </div>
+   <div class="modal-content">
+       <div class="modal-header">
+           <h2 class="modal-title">    إدارة   مصادر  HTML </h2>
+           <button class="modal-close-btn" data-modal-id="htmlSourcesModal"> ✖ </button>
+       </div>
+       <div class="modal-body" id="htmlSourcesContainer"></div>
+       <div class="modal-footer" style="margin-top: 20px; display: flex; gap: 10px; justify-content: space-between;">
+           <button id="addHtmlSourceBtn" class="btn btn-secondary">  ➕  إضافة   مصدر </button>
+           <button id="saveHtmlSourcesBtn" class="btn btn-primary">    حفظ  </button>
+       </div>
+   </div>
 </div>
-
 <!-- Google Sheet URL Modal -->
 <div id="sheetModal" class="modal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h2 class="modal-title">تحديث من Google Sheet</h2>
-      <button class="modal-close-btn" data-modal-id="sheetModal">✖</button>
-    </div>
-    <div class="modal-body">
-      <p style="margin-bottom: 12px;">أدخل رابط ملف Google Sheet الذي يحتوي على الأعمدة: <b>question_id, section_no, question_type, question_placement</b></p>
-      <input type="text" id="sheetUrlInput" placeholder="https://docs.google.com/spreadsheets/d/FILE_ID/edit" style="width:100%; margin-bottom: 18px;">
-      <div id="sheetStatusMsg" style="margin-top:10px;font-size:14px;color:#ef4444;"></div>
-    </div>
-    <div class="modal-footer" style="margin-top: 20px; text-align: left;">
-      <button id="applySheetBtn" class="btn btn-primary" style="width:100%;">تحديث من الشيت</button>
-    </div>
-  </div>
+ <div class="modal-content">
+   <div class="modal-header">
+       <h2 class="modal-title">    تحديث   من  Google Sheet</h2>
+       <button class="modal-close-btn" data-modal-id="sheetModal"> ✖ </button>
+   </div>
+   <div class="modal-body">
+       <p style="margin-bottom: 12px;">    أدخل   رابط   ملف  Google Sheet  الذي   يحتوي   على   الأعمدة  : <b>question_id, section_no, question_type, question_placement</b></p>
+       <input type="text" id="sheetUrlInput" placeholder="https://docs.google.com/spreadsheets/d/FILE_ID/edit" style="width:100%; margin-bottom: 18px;">
+       <div id="sheetStatusMsg" style="margin-top:10px;font-size:14px;color:#ef4444;"></div>
+   </div>
+   <div class="modal-footer" style="margin-top: 20px; text-align: left;">
+       <button id="applySheetBtn" class="btn btn-primary" style="width:100%;">    تحديث   من   الشيت  </button>
+   </div>
+ </div>
 </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 <!-- Quick Stats Modal -->
 <div id="quickStatsModal" class="modal">
   <div class="modal-content">
     <div class="modal-header">
-      <h2 class="modal-title">📊 إحصائيات سريعة</h2>
-      <button class="modal-close-btn" data-modal-id="quickStatsModal">✖</button>
+        <h2 class="modal-title">  📊  إحصائيات   سريعة </h2>
+        <button class="modal-close-btn" data-modal-id="quickStatsModal"> ✖ </button>
     </div>
     <div class="modal-body" id="quickStatsContent"></div>
   </div>
 </div>
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 <!-- Confirm Import Modal -->
 <div id="confirmImportModal" class="modal">
   <div class="modal-content">
     <div class="modal-header">
-      <h2 class="modal-title">تأكيد الاستيراد</h2>
-      <button class="modal-close-btn" data-modal-id="confirmImportModal">✖</button>
+        <h2 class="modal-title"> تأكيد   الاستيراد </h2>
+        <button class="modal-close-btn" data-modal-id="confirmImportModal"> ✖ </button>
     </div>
     <div class="modal-body" id="confirmImportContent" style="margin-bottom:18px;"></div>
     <div class="modal-footer" style="display:flex;gap:12px;justify-content:flex-end;">
-      <button id="confirmImportBtn" class="btn btn-primary">تأكيد الاستيراد</button>
-      <button id="cancelImportBtn" class="btn btn-secondary">إلغاء</button>
+      <button id="confirmImportBtn" class="btn btn-primary"> تأكيد   الاستيراد </button>
+      <button id="cancelImportBtn" class="btn btn-secondary"> إلغاء </button>
     </div>
   </div>
 </div>
 
-<!-- Filter Modal -->
-<div id="filterModal" class="modal">
+
+<!-- Modal لاختيار مجموعة الشرائح للاستيراد -->
+<div id="importChoiceModal" class="modal">
   <div class="modal-content">
     <div class="modal-header">
-      <h2 class="modal-title">تصفية الشرائح</h2>
-      <button class="modal-close-btn" data-modal-id="filterModal">✖</button>
+      <h2 class="modal-title">اختيار الشرائح للاستيراد</h2>
+      <button class="modal-close-btn" data-modal-id="importChoiceModal">✖</button>
     </div>
-    <div class="modal-body">
-      <label><input type="radio" name="filterType" value="all" checked> عرض الكل</label><br>
-      <label><input type="radio" name="filterType" value="questions"> فقط الأسئلة</label><br>
-      <label><input type="radio" name="filterType" value="explain"> فقط الشرح</label><br>
-      <label><input type="radio" name="filterType" value="checkpoint"> فقط Checkpoint</label><br>
+    <div class="modal-body" id="importChoiceContent" style="margin-bottom:18px;">
+      <p>هناك شرائح محددة لكنها غير ظاهرة بسبب الفلترة.<br>أي مجموعة تريد استيرادها؟</p>
+    </div>
+    <div class="modal-footer" style="display:flex;gap:12px;justify-content:flex-end;">
+      <button id="importVisibleBtn" class="btn btn-primary">استيراد الظاهرة فقط</button>
+      <button id="importAllSelectedBtn" class="btn btn-secondary">استيراد كل المحدد</button>
+      <button class="btn btn-secondary modal-close-btn" data-modal-id="importChoiceModal">إلغاء</button>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- Filter Modal -->
+<div id="filterModal" class="modal" style="display:none;z-index:10000;">
+  <div class="modal-content" style="min-width:320px;max-width:90vw;">
+    <div class="modal-header">
+      <h2 class="modal-title">تصفية الشرائح</h2>
+      <button class="modal-close-btn" id="closeFilterModal">✖</button>
+    </div>
+    <div class="modal-body" style="padding:16px;display:flex;flex-direction:column;gap:12px;">
+      <label><input type="radio" name="filterType" value="all" checked> عرض الكل</label>
+      <label><input type="radio" name="filterType" value="questions"> فقط الأسئلة</label>
+      <label><input type="radio" name="filterType" value="explain"> فقط الشرح</label>
+      <label><input type="radio" name="filterType" value="checkpoint"> فقط Checkpoint</label>
       <div style="margin-top:8px;">
         <b>حسب النوع (placement):</b>
         <div id="placementFilters" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;"></div>
       </div>
     </div>
-    <div class="modal-footer" style="display:flex;gap:12px;justify-content:flex-end; margin-top: 1rem;">
+    <div class="modal-footer" style="display:flex;gap:12px;justify-content:flex-end;">
       <button id="applyFilterBtn" class="btn btn-primary">تطبيق</button>
     </div>
   </div>
 </div>
 
-<!-- Unlinked IDs Modal -->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- أضف نافذة منبثقة لعرض ونسخ IDات unlinked -->
 <div id="unlinkedModal" class="modal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h2 class="modal-title">🟧 الأسئلة Unlinked</h2>
-      <button class="modal-close-btn" data-modal-id="unlinkedModal">✖</button>
-    </div>
-    <div class="modal-body" id="unlinkedModalBody"></div>
-    <div class="modal-footer" style="display:flex;gap:12px;justify-content:flex-end; margin-top: 1rem;">
-      <button id="copyUnlinkedBtn" class="btn btn-primary">نسخ كل IDات</button>
-      <button id="deleteUnlinkedBtn" class="btn btn-secondary" style="background:#fee2e2;color:#991b1b;border:1px solid #fecaca;">مسح الكل</button>
-    </div>
-  </div>
+ <div class="modal-content" style="min-width:320px;max-width:90vw;">
+   <div class="modal-header">
+     <h2 class="modal-title">🟧 الأسئلة Unlinked</h2>
+     <button class="modal-close-btn" data-modal-id="unlinkedModal">✖</button>
+   </div>
+   <div class="modal-body" id="unlinkedModalBody" style="padding:16px;display:flex;flex-direction:column;gap:12px;"></div>
+   <div class="modal-footer" style="display:flex;gap:12px;justify-content:flex-end;">
+     <button id="copyUnlinkedBtn" class="btn btn-primary">نسخ كل IDات</button>
+     <button id="deleteUnlinkedBtn" class="btn btn-secondary" style="background:#fee2e2;color:#991b1b;border:1px solid #fecaca;">مسح الكل</button>
+     <button id="undoUnlinkedBtn" class="btn btn-secondary" style="background:#f3f4f6;color:#991b1b;border:1px solid #fecaca;display:none;">تراجع عن الحذف</button>
+   </div>
+ </div>
 </div>
 
-<!-- Import Scope Modal -->
-<div id="importScopeModal" class="modal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h2 class="modal-title">تحديد نطاق الاستيراد</h2>
-      <button class="modal-close-btn" data-modal-id="importScopeModal">✖</button>
-    </div>
-    <div class="modal-body" id="importScopeContent" style="line-height: 1.8; margin-bottom: 20px;"></div>
-    <div class="modal-footer" style="display:flex; flex-direction: column; gap: 12px;">
-      <button id="importVisibleBtn" class="btn btn-primary">استيراد المحدد في المعاينة فقط</button>
-      <button id="importAllBtn" class="btn btn-secondary">استيراد كل الشرائح المحددة (بما في ذلك المخفية)</button>
-    </div>
-  </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- أضف زر تراجع عن الحذف (Undo) يظهر بعد الحذف -->
+<div id="undoUnlinkedContainer" style="display:none;text-align:center;margin:12px 0;">
+ <button id="undoUnlinkedBtn" class="btn btn-secondary" style="background:#f3f4f6;color:#991b1b;border:1px solid #fecaca;">تراجع عن الحذف</button>
 </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 <script>
-// =====================
-//  Global State & Config
-// =====================
+// Global state variables
 let allSlidesData = [];
 let htmlSourceUrls = [];
 let isLoading = false;
 let sortableInstance = null;
-let lastDeletedUnlinkedSlides = [];
-
-// This will be populated once the DOM is ready
-let ui = {};
-
-// Client-side config mirror
-const CONFIG = {
-  PLACEMENTS: ['live', 'example', 'ai', 'homework', 'interactive example'],
-  FINAL_SLIDE_TITLES: {
-    'live': 'سؤال', 'ai': 'سؤال', 'homework': 'سؤال',
-    'example': 'مثال', 'interactive example': 'سؤال'
-  }
+// UI elements cache
+const ui = {
+   body: document.body,
+   folderId: document.getElementById('folderId'),
+   previewBtn: document.getElementById('previewBtn'),
+   importBtn: document.getElementById('importBtn'),
+   selectAllBtn: document.getElementById('selectAllBtn'),
+   deselectAllBtn: document.getElementById('deselectAllBtn'),
+   resetImportedBtn: document.getElementById('resetImportedBtn'),
+   updateFromSheetBtn: document.getElementById('updateFromSheetBtn'),
+   loading: document.getElementById('loading'),
+   statusContainer: document.getElementById('statusContainer'),
+   slidesPreview: document.getElementById('slidesPreview'),
+   backToFormBtn: document.getElementById('backToFormBtn'),
+   sourceCount: document.getElementById('sourceCount'),
+   // Modals
+   htmlSourcesModal: document.getElementById('htmlSourcesModal'),
+   htmlSourcesContainer: document.getElementById('htmlSourcesContainer'),
+   manageHtmlSourcesBtn: document.getElementById('manageHtmlSourcesBtn'),
+   addHtmlSourceBtn: document.getElementById('addHtmlSourceBtn'),
+   saveHtmlSourcesBtn: document.getElementById('saveHtmlSourcesBtn'),
+   sheetModal: document.getElementById('sheetModal'),
+   sheetUrlInput: document.getElementById('sheetUrlInput'),
+   applySheetBtn: document.getElementById('applySheetBtn'),
+   sheetStatusMsg: document.getElementById('sheetStatusMsg'),
+   quickStatsBtn: document.getElementById('quickStatsBtn'),
+   quickStatsModal: document.getElementById('quickStatsModal'),
+   quickStatsContent: document.getElementById('quickStatsContent'),
+   confirmImportModal: document.getElementById('confirmImportModal'),
+   confirmImportContent: document.getElementById('confirmImportContent'),
+   confirmImportBtn: document.getElementById('confirmImportBtn'),
+   cancelImportBtn: document.getElementById('cancelImportBtn'),
+   filterBtn: document.getElementById('filterBtn'),
+   filterModal: document.getElementById('filterModal'),
+   closeFilterModal: document.getElementById('closeFilterModal'),
+   applyFilterBtn: document.getElementById('applyFilterBtn'),
+   unlinkedCountBtn: document.getElementById('unlinkedCountBtn'),
+   unlinkedCount: document.getElementById('unlinkedCount'),
+   unlinkedModal: document.getElementById('unlinkedModal'),
+   unlinkedModalBody: document.getElementById('unlinkedModalBody'),
+   copyUnlinkedBtn: document.getElementById('copyUnlinkedBtn'),
+   unlinkedIdsArea: document.getElementById('unlinkedIdsArea'),
+   undoUnlinkedBtn: document.getElementById('undoUnlinkedBtn'),
+   undoUnlinkedContainer: document.getElementById('undoUnlinkedContainer'),
+   toggleHeaderFooterBtn: document.getElementById('toggleHeaderFooterBtn'),
 };
 
-// =====================
-//  Initialization
-// =====================
-document.addEventListener('DOMContentLoaded', function() {
-  // --- CRITICAL FIX ---
-  // Populate the UI elements cache *after* the document is fully loaded.
-  // This prevents errors where the script tries to find an element before it exists.
-  ui = {
-    body: document.body,
-    folderId: document.getElementById('folderId'),
-    previewBtn: document.getElementById('previewBtn'),
-    importBtn: document.getElementById('importBtn'),
-    selectAllBtn: document.getElementById('selectAllBtn'),
-    deselectAllBtn: document.getElementById('deselectAllBtn'),
-    resetImportedBtn: document.getElementById('resetImportedBtn'),
-    updateFromSheetBtn: document.getElementById('updateFromSheetBtn'),
-    loading: document.getElementById('loading'),
-    statusContainer: document.getElementById('statusContainer'),
-    slidesPreview: document.getElementById('slidesPreview'),
-    backToFormBtn: document.getElementById('backToFormBtn'),
-    sourceCount: document.getElementById('sourceCount'),
-    // Modals & Controls
-    manageHtmlSourcesBtn: document.getElementById('manageHtmlSourcesBtn'),
-    htmlSourcesModal: document.getElementById('htmlSourcesModal'),
-    htmlSourcesContainer: document.getElementById('htmlSourcesContainer'),
-    addHtmlSourceBtn: document.getElementById('addHtmlSourceBtn'),
-    saveHtmlSourcesBtn: document.getElementById('saveHtmlSourcesBtn'),
-    sheetModal: document.getElementById('sheetModal'),
-    sheetUrlInput: document.getElementById('sheetUrlInput'),
-    applySheetBtn: document.getElementById('applySheetBtn'),
-    sheetStatusMsg: document.getElementById('sheetStatusMsg'),
-    quickStatsBtn: document.getElementById('quickStatsBtn'),
-    quickStatsModal: document.getElementById('quickStatsModal'),
-    quickStatsContent: document.getElementById('quickStatsContent'),
-    confirmImportModal: document.getElementById('confirmImportModal'),
-    confirmImportContent: document.getElementById('confirmImportContent'),
-    confirmImportBtn: document.getElementById('confirmImportBtn'),
-    cancelImportBtn: document.getElementById('cancelImportBtn'),
-    filterBtn: document.getElementById('filterBtn'),
-    filterModal: document.getElementById('filterModal'),
-    applyFilterBtn: document.getElementById('applyFilterBtn'),
-    unlinkedCountBtn: document.getElementById('unlinkedCountBtn'),
-    unlinkedCount: document.getElementById('unlinkedCount'),
-    unlinkedModal: document.getElementById('unlinkedModal'),
-    unlinkedModalBody: document.getElementById('unlinkedModalBody'),
-    copyUnlinkedBtn: document.getElementById('copyUnlinkedBtn'),
-    deleteUnlinkedBtn: document.getElementById('deleteUnlinkedBtn'),
-    importScopeModal: document.getElementById('importScopeModal'),
-    importScopeContent: document.getElementById('importScopeContent'),
-    importVisibleBtn: document.getElementById('importVisibleBtn'),
-    importAllBtn: document.getElementById('importAllBtn'),
-    toggleHeaderFooterBtn: document.getElementById('toggleHeaderFooterBtn'),
-  };
 
-  initialize();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+document.addEventListener('DOMContentLoaded', function() {
+   // رسالة توضيحية إذا لم تكن البيئة Google Apps Script
+   if (typeof google === 'undefined' || !google.script || !google.script.run) {
+       showMessage('⚠️ يجب تشغيل هذه الصفحة من خلال Google Apps Script فقط. بعض الميزات لن تعمل في المتصفح مباشرة.', 'error');
+       // تعطيل الأزرار التي تعتمد على السيرفر
+       ui.previewBtn.disabled = true;
+       ui.importBtn.disabled = true;
+       ui.updateFromSheetBtn.disabled = true;
+       ui.resetImportedBtn.disabled = true;
+   }
+   initialize();
+   // تحديث عداد unlinked عند كل رسم
+   updateUnlinkedCount();
+   // زر تحديد تلقائي متقدم
+   const autoSelectBtn = document.getElementById('autoSelectBtn');
+   if (autoSelectBtn) {
+     autoSelectBtn.addEventListener('click', function() {
+       document.getElementById('autoSelectModal').style.display = 'flex';
+       document.getElementById('autoSelectIdsArea').value = '';
+       document.getElementById('autoSelectPlacementsContainer').innerHTML = '';
+       // تعبئة قائمة placement الجماعية
+       const placements = (window.CONFIG && CONFIG.PLACEMENTS) || ['live','example','ai','homework','interactive example'];
+       const allPlacementSelect = document.getElementById('autoSelectAllPlacement');
+       if (allPlacementSelect) {
+         allPlacementSelect.innerHTML = '<option value="">-- اختر --</option>' + placements.map(p => `<option value="${p}">${p}</option>`).join('');
+       }
+     });
+   }
+   // عند إدخال ids في textarea، أنشئ قائمة placement لكل id
+   const autoSelectIdsArea = document.getElementById('autoSelectIdsArea');
+   if (autoSelectIdsArea) {
+     autoSelectIdsArea.addEventListener('input', function() {
+       const ids = autoSelectIdsArea.value.split(/\n|\r/).map(s => s.trim()).filter(Boolean);
+       const placements = (window.CONFIG && CONFIG.PLACEMENTS) || ['live','example','ai','homework','interactive example'];
+       const container = document.getElementById('autoSelectPlacementsContainer');
+       if (ids.length === 0) {
+         container.innerHTML = '<div style="color:#888;font-size:13px;">أدخل IDs في الأعلى ليظهر لك خيارات التحديد هنا.</div>';
+         return;
+       }
+       container.innerHTML = `
+         <div style='display:flex;font-weight:bold;background:#f3f4f6;padding:6px 8px;border-radius:8px;margin-bottom:6px;'>
+           <div style='flex:2;'>ID</div>
+           <div style='flex:1;'>Placement</div>
+         </div>
+         ${ids.map(id => `
+           <div style='display:flex;align-items:center;gap:8px;margin-bottom:4px;background:#fff;padding:6px 8px;border-radius:8px;'>
+             <span style='font-family:monospace;font-size:13px;flex:2;'>${id}</span>
+             <select class='auto-select-placement' data-id='${id}' style='flex:1;padding:4px 8px;border-radius:6px;'>
+               ${placements.map(p => `<option value='${p}'>${p}</option>`).join('')}
+             </select>
+           </div>
+         `).join('')}
+       `;
+     });
+   }
+   // عند تغيير قائمة placement الجماعية
+   const allPlacementSelect = document.getElementById('autoSelectAllPlacement');
+   if (allPlacementSelect) {
+     allPlacementSelect.addEventListener('change', function() {
+       const value = allPlacementSelect.value;
+       if (!value) return;
+       document.querySelectorAll('.auto-select-placement').forEach(sel => {
+         sel.value = value;
+       });
+     });
+   }
+   // عند الضغط تطبيق
+   const autoSelectApplyBtn = document.getElementById('autoSelectApplyBtn');
+   if (autoSelectApplyBtn) {
+     autoSelectApplyBtn.addEventListener('click', function() {
+       const ids = autoSelectIdsArea.value.split(/\n|\r/).map(s => s.trim()).filter(Boolean);
+       const selects = document.querySelectorAll('.auto-select-placement');
+       const idToPlacement = {};
+       selects.forEach(sel => { idToPlacement[sel.dataset.id] = sel.value; });
+       let found = 0;
+       allSlidesData.forEach(slide => {
+         if (slide.questionId && ids.includes(slide.questionId)) {
+           slide.selected = true;
+           if (idToPlacement[slide.questionId]) slide.placement = idToPlacement[slide.questionId];
+           found++;
+         }
+       });
+       renderSlides(allSlidesData);
+       document.getElementById('autoSelectModal').style.display = 'none';
+       showMessage(`تم تحديد وتحديث ${found} سؤال.`, 'success');
+     });
+   }
 });
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 function initialize() {
-  // Check if running in Apps Script environment
-  if (typeof google === 'undefined' || !google.script || !google.script.run) {
-    showMessage('⚠️ يجب تشغيل هذه الصفحة من خلال Google Apps Script فقط. بعض الميزات لن تعمل.', 'error');
-    // Disable server-dependent buttons
-    ['previewBtn', 'importBtn', 'updateFromSheetBtn', 'resetImportedBtn'].forEach(btnId => {
-        if(ui[btnId]) ui[btnId].disabled = true;
-    });
-  }
-  
-  setupEventListeners();
-  loadSavedData();
-  setupPlacementFilters();
+   setupEventListeners();
+   loadSavedData();
+   setupPlacementFilters();
 }
 
-// =====================
-//  Event Listeners Setup
-// =====================
-function setupEventListeners() {
-  ui.previewBtn.addEventListener('click', handlePreview);
-  ui.importBtn.addEventListener('click', handleImport);
-  ui.selectAllBtn.addEventListener('click', () => selectAll(true));
-  ui.deselectAllBtn.addEventListener('click', () => selectAll(false));
-  ui.resetImportedBtn.addEventListener('click', resetImportedSlides);
-  ui.backToFormBtn.addEventListener('click', exitPreviewMode);
-  ui.folderId.addEventListener('input', validateInputs);
-  
-  // Modal Listeners
-  ui.manageHtmlSourcesBtn.addEventListener('click', openHtmlSourcesModal);
-  ui.addHtmlSourceBtn.addEventListener('click', () => addHtmlSourceInput());
-  ui.saveHtmlSourcesBtn.addEventListener('click', saveHtmlSources);
-  ui.updateFromSheetBtn.addEventListener('click', () => ui.sheetModal.style.display = 'flex');
-  ui.applySheetBtn.addEventListener('click', applySheetData);
-  ui.quickStatsBtn.addEventListener('click', showQuickStatsModal);
-  // Removed: ui.confirmImportBtn.addEventListener('click', doImportSlides); // Will be handled by showConfirmImportModal
-  ui.cancelImportBtn.addEventListener('click', () => ui.confirmImportModal.style.display = 'none');
-  ui.filterBtn.addEventListener('click', () => ui.filterModal.style.display = 'flex');
-  ui.applyFilterBtn.addEventListener('click', applyFilter);
-  ui.unlinkedCountBtn.addEventListener('click', showUnlinkedModal);
-  ui.copyUnlinkedBtn.addEventListener('click', copyUnlinkedIds);
-  ui.deleteUnlinkedBtn.addEventListener('click', deleteUnlinkedSlides);
 
-  document.querySelectorAll('.modal-close-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-        const modalId = e.target.dataset.modalId;
-        if(modalId) {
-            const modal = document.getElementById(modalId);
-            if(modal) modal.style.display = 'none';
-        }
-    });
-  });
 
-  // Event delegation for dynamically created slide items
-  ui.slidesPreview.addEventListener('change', handleSlideChange);
-  ui.slidesPreview.addEventListener('click', handleSlideClick);
-  ui.slidesPreview.addEventListener('keydown', handleSlideKeydown);
 
-  // Header/Footer toggle
-  let headerFooterHidden = false;
-  ui.toggleHeaderFooterBtn.addEventListener('click', function() {
-    const header = document.querySelector('header');
-    const footer = document.querySelector('footer');
-    headerFooterHidden = !headerFooterHidden;
-    if (header) header.style.display = headerFooterHidden ? 'none' : 'block';
-    if (footer) footer.style.display = headerFooterHidden ? 'none' : 'block';
-    this.textContent = headerFooterHidden ? 'إظهار الهيدر والفوتر' : 'إخفاء الهيدر والفوتر';
-  });
-}
 
-// =====================
-//  UI & Event Handlers
-// =====================
-function handleSlideChange(e) {
-    const slideItem = e.target.closest('.slide-item');
-    if (!slideItem) return;
-    const index = parseInt(slideItem.dataset.index, 10);
-    if (isNaN(index)) return;
 
-    const action = e.target.dataset.action;
-    if (action === 'select') {
-        allSlidesData[index].selected = e.target.checked;
-        updateSlideVisuals(index);
-    } else if (action === 'change-placement') {
-        const newPlacement = e.target.value;
-        allSlidesData[index].placement = newPlacement;
 
-        // Update homework status based on placement
-        if (newPlacement === 'example' || newPlacement === 'interactive example' || newPlacement === 'homework') {
-            allSlidesData[index].homework = true;
-        } else {
-            allSlidesData[index].homework = false;
-        }
 
-        let originalTitle = allSlidesData[index].originalTitle;
-        const newTitle = `${CONFIG.FINAL_SLIDE_TITLES[newPlacement] || 'سؤال'}: ${originalTitle}`;
-        allSlidesData[index].title = newTitle;
-        slideItem.querySelector(`#title-${index}`).textContent = newTitle;
 
-        // Since renderSlides is not called, if you had visual indicators for 'homework'
-        // that were separate from placement, they might need manual update here.
-        // However, we removed the separate homework dropdown.
-    }
-    // Removed 'change-homework' else if block
-}
 
-function handleSlideClick(e) {
-    const slideItem = e.target.closest('.slide-item');
-    if (!slideItem) return;
-    const index = parseInt(slideItem.dataset.index, 10);
-    if (isNaN(index)) return;
 
-    const action = e.target.dataset.action;
-    if (action === 'toggle-id') {
-        allSlidesData[index].showSectionId = !allSlidesData[index].showSectionId;
-        renderSlides(allSlidesData);
-    } else if (action === 'set-checkpoint') {
-        const isCurrentlyCheckpoint = allSlidesData[index].isCheckpoint;
-        allSlidesData.forEach(slide => slide.isCheckpoint = false); // Only one checkpoint allowed
-        allSlidesData[index].isCheckpoint = !isCurrentlyCheckpoint;
-        renderSlides(allSlidesData);
-    } else if (action === 'toggle-unlinked') {
-        allSlidesData[index].isUnlinked = !allSlidesData[index].isUnlinked;
-        renderSlides(allSlidesData);
-    }
-}
 
-function handleSlideKeydown(e) {
-    if (e.key === 'Enter' && e.target.dataset.action === 'move-to-position') {
-        e.preventDefault();
-        const slideItem = e.target.closest('.slide-item');
-        if (!slideItem) return;
-        const index = parseInt(slideItem.dataset.index, 10);
-        const newPosition = parseInt(e.target.value, 10);
-        moveSlideToPosition(index, newPosition);
-    }
-}
 
-function validateInputs() {
-  const isValid = htmlSourceUrls.length > 0 && ui.folderId.value.trim();
-  ui.previewBtn.disabled = !isValid || isLoading;
-  updateImportButtonState();
-}
 
-function updateImportButtonState() {
-    const hasSelection = allSlidesData.some(s => s.selected);
-    const isPreview = ui.body.classList.contains('preview-mode');
-    ui.importBtn.disabled = isLoading || !hasSelection || !isPreview;
-}
 
-function setLoadingState(loading, message = '') {
-  isLoading = loading;
-  ui.loading.style.display = loading ? 'block' : 'none';
-  if (loading) {
-    ui.loading.querySelector('.loading-text').textContent = message;
-    ui.slidesPreview.style.display = 'none';
-  }
-  validateInputs();
-}
 
-function showMessage(message, type = 'success', duration = 4000) {
-  const statusDiv = document.createElement('div');
-  statusDiv.className = `status-message status-${type}`;
-  statusDiv.textContent = message;
-  ui.statusContainer.innerHTML = '';
-  ui.statusContainer.appendChild(statusDiv);
-  setTimeout(() => {
-    if (statusDiv.parentNode) {
-      statusDiv.parentNode.removeChild(statusDiv);
-    }
-  }, duration);
-}
 
-function enterPreviewMode() {
-  ui.body.classList.add('preview-mode');
-  ui.slidesPreview.style.display = 'block';
-  updateImportButtonState();
-}
 
-function exitPreviewMode() {
-  ui.body.classList.remove('preview-mode');
-  ui.slidesPreview.style.display = 'none';
-  ui.slidesPreview.innerHTML = '';
-  allSlidesData = [];
-  updateImportButtonState();
-}
 
-function selectAll(isSelected) {
-  allSlidesData.forEach(slide => slide.selected = isSelected);
-  renderSlides(allSlidesData);
-}
 
-// =====================
-//  Core Logic Handlers
-// =====================
-function handlePreview() {
-  if (htmlSourceUrls.length === 0) {
-    showMessage('يرجى إضافة مصدر HTML واحد على الأقل.', 'error');
-    return;
-  }
-  setLoadingState(true, 'جارٍ تحميل ودمج الشرائح من جميع المصادر...');
-  google.script.run
-    .withSuccessHandler(onPreviewSuccess)
-    .withFailureHandler(onApiError)
-    .getSlidesForPreview(htmlSourceUrls, ui.folderId.value.trim());
-}
 
-function onPreviewSuccess(result) {
-  setLoadingState(false);
-  if (result && result.error) {
-    showMessage(result.error, 'error');
-    exitPreviewMode();
-    return;
-  }
-  if (!result || result.length === 0) {
-    showMessage('لم يتم العثور على شرائح جديدة. قد تكون جميعها مستوردة بالفعل.', 'success');
-    exitPreviewMode();
-    return;
-  }
-  allSlidesData = result.map(slide => {
-    const initialPlacement = slide.placement; // Placement from server
-    let initialHomework = false;
-    if (initialPlacement === 'example' || initialPlacement === 'interactive example' || initialPlacement === 'homework') {
-        initialHomework = true;
-    }
 
-    return {
-      ...slide,
-      selected: false,
-      notInSheet: false,
-      isCheckpoint: false, // Ensure no slide is a checkpoint by default on initial load
-      homework: initialHomework // Set initial homework status based on initial placement
-    };
-  });
-  renderSlides(allSlidesData);
-  enterPreviewMode();
-  showMessage(`تم تحميل ${result.length} شريحة. حدد ما تريد ثم اضغط استيراد.`, 'success');
-}
 
-function handleImport() {
-    const allSelectedSlides = allSlidesData.filter(slide => slide.selected);
-    if (allSelectedSlides.length === 0) {
-        showMessage('يرجى تحديد شريحة واحدة على الأقل للاستيراد.', 'error');
-        return;
-    }
 
-    const visibleSlides = Array.from(ui.slidesPreview.querySelectorAll('.slide-item'))
-                               .map(item => allSlidesData[parseInt(item.dataset.index, 10)]);
-    const visibleSelectedSlides = visibleSlides.filter(slide => slide.selected);
 
-    if (allSelectedSlides.length === visibleSelectedSlides.length) {
-        showConfirmImportModal(allSelectedSlides);
-    } else {
-        ui.importScopeContent.innerHTML = `
-            <p>لقد قمت بتحديد شرائح مخفية حاليًا بسبب الفلترة. الرجاء تحديد ما تود استيراده:</p>
-            <ul style="margin-top: 10px; padding-right: 20px;">
-                <li><strong>${visibleSelectedSlides.length} شريحة</strong> (المحدد والظاهر في المعاينة الحالية)</li>
-                <li><strong>${allSelectedSlides.length} شريحة</strong> (كل ما قمت بتحديده، بما في ذلك المخفي)</li>
-            </ul>`;
-        ui.importVisibleBtn.onclick = () => {
-            ui.importScopeModal.style.display = 'none';
-            showConfirmImportModal(visibleSelectedSlides);
-        };
-        ui.importAllBtn.onclick = () => {
-            ui.importScopeModal.style.display = 'none';
-            showConfirmImportModal(allSelectedSlides);
-        };
-        ui.importScopeModal.style.display = 'flex';
-    }
-}
 
-// --- Added missing function ---
-function showConfirmImportModal(slidesToConfirm) {
-    if (!slidesToConfirm || slidesToConfirm.length === 0) {
-        showMessage('لم يتم تحديد شرائح للاستيراد.', 'error');
-        return;
-    }
-    ui.confirmImportContent.innerHTML = `هل أنت متأكد أنك تريد استيراد <strong>${slidesToConfirm.length}</strong> شريحة؟`;
-    ui.confirmImportModal.style.display = 'flex';
 
-    // Set the onclick handler for the confirm button dynamically
-    ui.confirmImportBtn.onclick = () => {
-        doImportSlides(slidesToConfirm);
-    };
-}
-// --- End of added function ---
 
-function doImportSlides(slidesToImport) {
-    ui.confirmImportModal.style.display = 'none';
 
-    // If slidesToImport is not provided (e.g. if old event listener was somehow still active),
-    // default to all selected, but ideally this path should not be taken.
-    const slidesToProcess = slidesToImport || allSlidesData.filter(slide => slide.selected);
 
-    if (slidesToProcess.length === 0) {
-        showMessage('لم يتم تحديد شرائح للاستيراد.', 'error');
-        return;
-    }
 
-    slidesToProcess.forEach(slide => {
-        if (typeof slide.homework === 'undefined') slide.homework = false;
-        if (slide.placement === 'example' || slide.placement === 'interactive example') {
-            slide.homework = true;
-            slide.slideId = 'new';
-            if ('question_placement' in slide) {
-                delete slide.question_placement;
-            }
-        }
-    });
 
-    setLoadingState(true, `جارٍ استيراد ${slidesToProcess.length} شريحة...`);
-    google.script.run
-        .withSuccessHandler(onImportSuccess)
-        .withFailureHandler(onApiError)
-        .importSelectedSlides(slidesToProcess, ui.folderId.value.trim());
-}
 
-function onImportSuccess(importedIds) {
-  setLoadingState(false);
-  if (importedIds && importedIds.error) {
-    showMessage(importedIds.error, 'error');
-    return;
-  }
-  showMessage(`تم استيراد ${importedIds.length} شريحة بنجاح!`, 'success');
-  // Remove imported slides from the view
-  allSlidesData = allSlidesData.filter(slide => {
-    const id = slide.questionId || slide.slideId;
-    return !importedIds.includes(id);
-  });
-  if (allSlidesData.length > 0) {
-    renderSlides(allSlidesData);
-  } else {
-    exitPreviewMode();
-  }
-}
 
-function onApiError(error) {
-  setLoadingState(false);
-  showMessage(`حدث خطأ في الخادم: ${error.message || JSON.stringify(error)}`, 'error');
-}
 
-// =====================
-//  HTML Sources Modal
-// =====================
-function openHtmlSourcesModal() {
-  ui.htmlSourcesContainer.innerHTML = '';
-  if (htmlSourceUrls.length === 0) {
-    addHtmlSourceInput();
-  } else {
-    htmlSourceUrls.forEach(url => addHtmlSourceInput(url));
-  }
-  ui.htmlSourcesModal.style.display = 'flex';
-}
 
-function addHtmlSourceInput(url = '') {
-  const id = `source-${Date.now()}-${Math.random()}`;
-  const item = document.createElement('div');
-  item.className = 'html-source-item';
-  item.id = id;
-  item.innerHTML = `
-    <input type="text" class="html-source-url" value="${url}" placeholder="https://drive.google.com/file/d/FILE_ID/view">
-    <button class="btn btn-icon" onclick="document.getElementById('${id}').remove()">-</button>
-  `;
-  ui.htmlSourcesContainer.appendChild(item);
-}
 
-function saveHtmlSources() {
-  htmlSourceUrls = Array.from(document.querySelectorAll('.html-source-url'))
-    .map(input => input.value.trim())
-    .filter(url => url);
-  ui.htmlSourcesModal.style.display = 'none';
-  ui.sourceCount.textContent = htmlSourceUrls.length;
-  validateInputs();
-  // Save to server
-  google.script.run.saveUserData(htmlSourceUrls, ui.folderId.value.trim());
-  if (htmlSourceUrls.length > 0) {
-    showMessage(`${htmlSourceUrls.length} مصدر تم حفظه.`, 'success');
-  }
-}
 
-// =====================
-//  Rendering & DOM Manipulation
-// =====================
-function renderSlides(slides) {
-  const scrollPosition = ui.slidesPreview.scrollTop;
-  ui.slidesPreview.innerHTML = slides.map((slide, index) => {
-    const isNotInSheet = slide.isQuestion && slide.notInSheet;
-    const isBank = slide.html && slide.html.includes('data-questionid');
-    const itemClasses = ['slide-item', slide.selected ? 'selected' : '', isNotInSheet ? 'not-in-sheet' : ''].filter(Boolean).join(' ');
-    
-    const imageHtml = slide.imageUrl ? `<div class="slide-image-container"><img src="${slide.imageUrl}" class="slide-image" alt="صورة الشريحة" loading="lazy"></div>` : '';
-    const questionHtml = slide.isQuestion ? `
-      <div class="question-content">
-        <p class="question-body">${slide.questionBody || 'نص السؤال غير متوفر'}</p>
-        ${(slide.answerOptions && slide.answerOptions.length > 0) ? `
-        <ul class="answer-options">
-          ${slide.answerOptions.map(option => `<li>${option}</li>`).join('')}
-        </ul>` : ''}
-      </div>` : '';
 
-    // const homeworkHtml = slide.isQuestion ? `
-    //   <select class="homework-select" data-action="change-homework">
-    //     <option value="homework" ${slide.homework ? 'selected' : ''}>واجب (homework)</option>
-    //     <option value="not_homework" ${!slide.homework ? 'selected' : ''}>ليس واجب (not_homework)</option>
-    //   </select>` : ''; // Removed homeworkHtml
-      
-    const placementHtml = slide.isQuestion ? `
-      <select class="placement-select" data-action="change-placement">
-        ${CONFIG.PLACEMENTS.map(p => `<option value="${p}" ${slide.placement === p ? 'selected' : ''}>${p}</option>`).join('')}
-      </select>` : '';
 
-    let unlinkedBtn = '';
-    if (slide.isQuestion) {
-        if (slide.isUnlinked) {
-            unlinkedBtn = `<button class="unlinked-badge" data-action="toggle-unlinked">unlinked</button>`;
-        } else if (allSlidesData.some(s => s.isUnlinked)) { // Show linked only if there are unlinked items
-            unlinkedBtn = `<span class="linked-badge">linked</span>`;
-        }
-    }
 
-    return `
-      <div class="${itemClasses}" id="item-${index}" data-index="${index}">
-        <div class="slide-index-badge">${index + 1}</div>
-        <div class="slide-header">
-          <div class="drag-handle">⠿</div>
-          <input type="checkbox" class="slide-checkbox" id="slide-${index}" data-action="select" ${slide.selected ? 'checked' : ''}>
-          <input type="number" class="move-to-input" data-action="move-to-position" placeholder="#" min="1" max="${slides.length}">
-          ${!slide.isQuestion && slide.sectionId ? `<button class="btn-toggle-section-id ${slide.showSectionId ? 'active' : ''}" data-action="toggle-id">${slide.showSectionId ? 'إخفاء ID' : 'إظهار ID'}</button>` : ''}
-          ${slide.isQuestion ? `<button class="btn-checkpoint ${slide.isCheckpoint ? 'active' : ''}" data-action="set-checkpoint">Checkpoint</button>` : ''}
-          <div class="slide-title" id="title-${index}">${slide.title}</div>
-        </div>
-        <div style="display: flex; align-items: center; gap: 10px; margin-top: 8px;">
-            ${placementHtml}
-            ${homeworkHtml}
-            ${unlinkedBtn}
-            ${isBank ? "<span class='bank-badge'>بنك</span>" : ''}
-        </div>
-        ${imageHtml}
-        ${questionHtml}
-      </div>`;
-  }).join('');
-  ui.slidesPreview.scrollTop = scrollPosition;
-  initializeSortable();
-  updateImportButtonState();
-  updateUnlinkedCount();
-}
 
-function updateSlideVisuals(index) {
-  const item = document.getElementById(`item-${index}`);
-  const checkbox = document.getElementById(`slide-${index}`);
-  if (!item || !checkbox) return;
-  item.classList.toggle('selected', allSlidesData[index].selected);
-  checkbox.checked = allSlidesData[index].selected;
-  updateImportButtonState();
-}
 
-// =====================
-//  Utility Functions
-// =====================
-function loadSavedData() {
-  google.script.run
-    .withSuccessHandler(data => {
-      if (data.htmlFileUrls) {
-        htmlSourceUrls = data.htmlFileUrls;
-        ui.sourceCount.textContent = htmlSourceUrls.length;
-      }
-      if (data.imageFolderId) ui.folderId.value = data.imageFolderId;
-      validateInputs();
-    })
-    .withFailureHandler(err => console.error('Could not load saved data:', err))
-    .getSavedUserData();
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 function setupPlacementFilters() {
-    const container = document.getElementById('placementFilters');
-    if (!container) return;
-    // Corrected the closing tag from </option> to </label>
-    container.innerHTML = CONFIG.PLACEMENTS.map(p => `<label><input type="checkbox" name="placementFilter" value="${p}"> ${p}</label>`).join('');
+ const placements = (window.CONFIG && CONFIG.PLACEMENTS) || ['live','example','ai','homework','interactive example'];
+ const container = document.getElementById('placementFilters');
+ if (!container) return;
+ container.innerHTML = placements.map(p => `<label><input type="checkbox" name="placementFilter" value="${p}"> ${p}</option>`).join('');
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function setupEventListeners() {
+   ui.previewBtn.addEventListener('click', handlePreview);
+   ui.importBtn.addEventListener('click', handleImport);
+   ui.selectAllBtn.addEventListener('click', () => selectAll(true));
+   ui.deselectAllBtn.addEventListener('click', () => selectAll(false));
+   ui.resetImportedBtn.addEventListener('click', resetImportedSlides);
+   ui.backToFormBtn.addEventListener('click', exitPreviewMode);
+   ui.folderId.addEventListener('input', validateInputs);
+    // Modal Listeners
+   ui.manageHtmlSourcesBtn.addEventListener('click', openHtmlSourcesModal);
+   ui.addHtmlSourceBtn.addEventListener('click', () => addHtmlSourceInput());
+   ui.saveHtmlSourcesBtn.addEventListener('click', saveHtmlSources);
+   ui.updateFromSheetBtn.addEventListener('click', () => ui.sheetModal.style.display = 'flex');
+   ui.applySheetBtn.addEventListener('click', applySheetData);
+   ui.quickStatsBtn.addEventListener('click', showQuickStatsModal);
+   ui.confirmImportBtn.addEventListener('click', doImportSlides);
+   ui.cancelImportBtn.addEventListener('click', () => ui.confirmImportModal.style.display = 'none');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   document.querySelectorAll('.modal-close-btn').forEach(btn => {
+       btn.addEventListener('click', () => {
+           document.getElementById(btn.dataset.modalId).style.display = 'none';
+       });
+   });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   const filterBtn = document.getElementById('filterBtn');
+   const filterModal = document.getElementById('filterModal');
+   const closeFilterModal = document.getElementById('closeFilterModal');
+   const applyFilterBtn = document.getElementById('applyFilterBtn');
+   filterBtn && filterBtn.addEventListener('click', () => { filterModal.style.display = 'flex'; });
+   closeFilterModal && closeFilterModal.addEventListener('click', () => { filterModal.style.display = 'none'; });
+   applyFilterBtn && applyFilterBtn.addEventListener('click', applyFilter);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   addPreviewEventListeners();
+
+
+
+
+
+
+   // حدث عند الضغط على زر عداد unlinked
+   const unlinkedCountBtn = document.getElementById('unlinkedCountBtn');
+   if (unlinkedCountBtn) {
+       unlinkedCountBtn.addEventListener('click', function() {
+           const ids = allSlidesData.filter(s => s.isUnlinked && s.questionId && s.questionId.length === 12).map(s => s.questionId);
+           const body = document.getElementById('unlinkedModalBody');
+           if (body) {
+               if (ids.length === 0) {
+                   body.innerHTML = '<div>لا يوجد أسئلة unlinked مكونة من 12 رقم.</div>';
+               } else {
+                   body.innerHTML = `<div style="margin-bottom:8px;">عدد الأسئلة: <b>${ids.length}</b></div><textarea id="unlinkedIdsArea" style="width:100%;height:120px;">${ids.join('\n')}</textarea>`;
+               }
+           }
+           document.getElementById('unlinkedModal').style.display = 'flex';
+       });
+   }
+
+
+
+
+
+
+
+
+   // حدث نسخ IDات unlinked
+   const copyUnlinkedBtn = document.getElementById('copyUnlinkedBtn');
+   if (copyUnlinkedBtn) {
+       copyUnlinkedBtn.addEventListener('click', function() {
+           const area = document.getElementById('unlinkedIdsArea');
+           if (area) {
+               area.select();
+               document.execCommand('copy');
+               showMessage(`تم نسخ ${area.value.split('\n').filter(Boolean).length} ID`, 'success');
+           }
+       });
+   }
+
+
+
+
+
+
+
+
+   // حدث زر مسح الكل
+   const deleteUnlinkedBtn = document.getElementById('deleteUnlinkedBtn');
+   if (deleteUnlinkedBtn) {
+       deleteUnlinkedBtn.addEventListener('click', function() {
+           if (!confirm('هل أنت متأكد أنك تريد حذف جميع الأسئلة unlinked؟')) return;
+           const before = allSlidesData.length;
+           const toDelete = allSlidesData.filter(s => s.isUnlinked && s.questionId && s.questionId.length === 12).length;
+           // حذف من allSlidesData
+           for (let i = allSlidesData.length - 1; i >= 0; i--) {
+               if (allSlidesData[i].isUnlinked && allSlidesData[i].questionId && allSlidesData[i].questionId.length === 12) {
+                   allSlidesData.splice(i, 1);
+               }
+           }
+           renderSlides(allSlidesData);
+           document.getElementById('unlinkedModal').style.display = 'none';
+           showMessage(`تم حذف ${toDelete} شريحة unlinked.`, 'success');
+           // إظهار زر التراجع
+           document.getElementById('undoUnlinkedContainer').style.display = 'block';
+       });
+   }
+
+
+
+
+
+
+
+
+   // حدث زر التراجع عن الحذف
+   const undoUnlinkedBtn = document.getElementById('undoUnlinkedBtn');
+   if (undoUnlinkedBtn) {
+       undoUnlinkedBtn.addEventListener('click', function() {
+           if (lastDeletedUnlinkedSlides && lastDeletedUnlinkedSlides.length > 0) {
+               // أضف الشرائح المحذوفة في بداية القائمة (أو حسب ترتيبها الأصلي)
+               allSlidesData.unshift(...lastDeletedUnlinkedSlides);
+               renderSlides(allSlidesData);
+               showMessage(`تم استرجاع ${lastDeletedUnlinkedSlides.length} شريحة.`, 'success');
+               lastDeletedUnlinkedSlides = [];
+               document.getElementById('undoUnlinkedContainer').style.display = 'none';
+           }
+       });
+   }
+
+
+
+
+
+
+
+
+   // إضافة منطق الزر
+   const toggleHeaderFooterBtn = document.getElementById('toggleHeaderFooterBtn');
+   let headerFooterHidden = false;
+   if (toggleHeaderFooterBtn) {
+       toggleHeaderFooterBtn.addEventListener('click', function() {
+           const header = document.querySelector('header');
+           const footer = document.querySelector('footer');
+           headerFooterHidden = !headerFooterHidden;
+           if (header) header.style.display = headerFooterHidden ? 'none' : '';
+           if (footer) footer.style.display = headerFooterHidden ? 'none' : '';
+           toggleHeaderFooterBtn.textContent = headerFooterHidden ? 'إظهار الهيدر والفوتر' : 'إخفاء الهيدر والفوتر';
+       });
+   }
+}
+function openHtmlSourcesModal() {
+   ui.htmlSourcesContainer.innerHTML = '';
+   if (htmlSourceUrls.length === 0) {
+       addHtmlSourceInput();
+   } else {
+       htmlSourceUrls.forEach(url => addHtmlSourceInput(url));
+   }
+   ui.htmlSourcesModal.style.display = 'flex';
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function addHtmlSourceInput(url = '') {
+   const id = `source-${Date.now()}-${Math.random()}`;
+   const item = document.createElement('div');
+   item.className = 'html-source-item';
+   item.id = id;
+   item.innerHTML = `
+       <input type="text" class="html-source-url" value="${url}" placeholder="https://drive.google.com/file/d/FILE_ID/view">
+       <button class="btn btn-icon" onclick="document.getElementById('${id}').remove()">-</button>
+   `;
+   ui.htmlSourcesContainer.appendChild(item);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// عند الضغط على زر حفظ المصادر فقط يتم الحفظ (لا يوجد حفظ تلقائي عند تغيير معرف المجلد)
+function saveHtmlSources() {
+   htmlSourceUrls = Array.from(document.querySelectorAll('.html-source-url'))
+                      .map(input => input.value.trim())
+                      .filter(url => url);
+ui.htmlSourcesModal.style.display = 'none';
+ui.sourceCount.textContent = htmlSourceUrls.length;
+validateInputs();
+// حفظ فقط عند الضغط على زر حفظ
+if (typeof google !== 'undefined' && google.script && google.script.run) {
+    google.script.run.saveUserData(htmlSourceUrls, ui.folderId.value.trim());
+}
+if (htmlSourceUrls.length > 0) {
+    showMessage(`${htmlSourceUrls.length}    مصدر   تم   حفظه .`, 'success');
+}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function loadSavedData() {
+   if (typeof google !== 'undefined' && google.script && google.script.run) {
+       google.script.run
+           .withSuccessHandler(data => {
+               if (data.htmlFileUrls) {
+                   htmlSourceUrls = data.htmlFileUrls;
+                   ui.sourceCount.textContent = htmlSourceUrls.length;
+               }
+               if (data.imageFolderId) ui.folderId.value = data.imageFolderId;
+               validateInputs();
+           })
+           .withFailureHandler(err => console.error('Could not load saved data:', err))
+           .getSavedUserData();
+   } else {
+        console.error("google.script.run is not available. This script must be run within a Google Apps Script environment.");
+   }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function validateInputs() {
+   const isValid = htmlSourceUrls.length > 0 && ui.folderId.value.trim();
+   ui.previewBtn.disabled = !isValid || isLoading;
+   // تحسين: تعطيل زر الاستيراد إذا لم تكن في وضع المعاينة
+   ui.importBtn.disabled = isLoading || allSlidesData.filter(s => s.selected).length === 0 || !ui.body.classList.contains('preview-mode');
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function handlePreview() {
+   if (htmlSourceUrls.length === 0) {
+       showMessage('  يرجى   إضافة   مصدر  HTML  واحد   على   الأقل .', 'error');
+       return;
+   }
+   setLoadingState(true, '  جارٍ تحميل   ودمج   الشرائح   من   جميع   المصادر ...');
+   if (typeof google !== 'undefined' && google.script && google.script.run) {
+       google.script.run
+           .withSuccessHandler(onPreviewSuccess)
+           .withFailureHandler(onApiError)
+           .getSlidesForPreview(htmlSourceUrls, ui.folderId.value.trim());
+   } else {
+       onApiError({message: "Google Apps Script environment not found."});
+   }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function onPreviewSuccess(result) {
+   setLoadingState(false);
+   if (result && result.error) {
+       showMessage(result.error, 'error');
+       exitPreviewMode();
+       return;
+   }
+   if (!result || result.length === 0) {
+       showMessage('لم يتم العثور على شرائح جديدة. قد تكون جميعها مستوردة بالفعل. استخدم "إعادة تعيين المستورد" لعرضها مرة أخرى.', 'success');
+       exitPreviewMode();
+       return;
+   }
+    allSlidesData = result.map(slide => ({
+        ...slide,
+        isCheckpoint: false,
+        selected: false,
+        notInSheet: false
+    }));
+    renderSlides(allSlidesData);
+    enterPreviewMode();
+    showMessage(`  تم   تحميل  ${result.length}    شريحة .  حدد   ما   تريد   ثم   اضغط   استيراد .`, 'success');
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function handleImport() {
+  const selectedSlides = allSlidesData.filter(slide => slide.selected);
+  if (selectedSlides.length === 0) {
+    showMessage('يرجى تحديد شريحة واحدة على الأقل للاستيراد.', 'error');
+    return;
+  }
+  // الشرائح الظاهرة حاليًا (بعد الفلترة)
+  const visibleSlides = Array.from(document.querySelectorAll('.slide-item'))
+    .map(item => allSlidesData[parseInt(item.dataset.index, 10)])
+    .filter(Boolean);
+  const visibleSelected = visibleSlides.filter(slide => slide.selected);
+
+
+  // إذا كان هناك شرائح محددة لكنها غير ظاهرة
+  if (selectedSlides.length > visibleSelected.length) {
+    // أظهر النافذة الجديدة
+    document.getElementById('importChoiceModal').style.display = 'flex';
+
+
+    // عند الضغط على استيراد الظاهرة فقط
+    document.getElementById('importVisibleBtn').onclick = function() {
+      document.getElementById('importChoiceModal').style.display = 'none';
+      showConfirmImportModal(visibleSelected);
+    };
+    // عند الضغط على استيراد كل المحدد
+    document.getElementById('importAllSelectedBtn').onclick = function() {
+      document.getElementById('importChoiceModal').style.display = 'none';
+      showConfirmImportModal(selectedSlides);
+    };
+    // زر الإلغاء يغلق النافذة (من خلال modal-close-btn)
+    return;
+  }
+
+
+  // إذا لم يكن هناك تعارض، استيراد عادي
+  showConfirmImportModal(selectedSlides);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function showConfirmImportModal(selectedSlides) {
+    let typeCounts = selectedSlides.reduce((acc, slide) => {
+        const typeKey = slide.placement || slide.type || '  غير   محدد ';
+        acc[typeKey] = (acc[typeKey] || 0) + 1;
+        return acc;
+    }, {});
+    let html = `<ul style="list-style:none;padding:0;margin:0 0 12px 0;line-height:2;">
+          <li>🔢 <b> عدد   الشرائح   المحددة :</b> ${selectedSlides.length}</li>
+          <li><b> تفصيل   الأنواع :</b></li>
+         ${Object.entries(typeCounts).map(([type, count]) =>
+            `<li style="margin-bottom:2px;">• <span style="color:#7c3aed;font-weight:bold;">${type}</span>: <span style="color:#1e293b;">${count}</span></li>`
+         ).join('')}
+    </ul>`;
+    ui.confirmImportContent.innerHTML = html;
+    ui.confirmImportModal.style.display = 'flex';
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function doImportSlides() {
+    ui.confirmImportModal.style.display = 'none';
+    const selectedSlides = allSlidesData.filter(slide => slide.selected);
+    if (selectedSlides.length === 0) return;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    setLoadingState(true, `  جارٍ استيراد  ${selectedSlides.length}    شريحة ...`);
+    ui.importBtn.disabled = true;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    if (typeof google !== 'undefined' && google.script && google.script.run) {
+       google.script.run
+           .withSuccessHandler(onImportSuccess)
+           .withFailureHandler(onApiError)
+           .importSelectedSlides(selectedSlides, ui.folderId.value.trim());
+    } else {
+       onApiError({message: "Google Apps Script environment not found."});
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function onImportSuccess(response) {
+   setLoadingState(false);
+   if (response && response.error) {
+        showMessage(response.error, 'error');
+        return;
+   }
+   const importedIds = response;
+   showMessage(`✅  تم   استيراد  ${importedIds.length}    شريحة   بنجاح !`, 'success');
+   allSlidesData = allSlidesData.filter(slide => {
+       const id = slide.questionId || slide.slideId;
+       return !importedIds.includes(id);
+   });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   if (allSlidesData.length > 0) {
+       renderSlides(allSlidesData);
+   } else {
+       showMessage('تم استيراد جميع الشرائح المحددة بنجاح.', 'success');
+       exitPreviewMode();
+   }
+   updateImportButtonState();
+}
+function applySheetData() {
+   const url = ui.sheetUrlInput.value.trim();
+   if (!url) {
+       ui.sheetStatusMsg.textContent = '  يرجى   إدخال   رابط   الشيت .';
+       return;
+   }
+   ui.sheetStatusMsg.textContent = '  جاري   جلب   البيانات   من   الشيت ...';
+   if (typeof google !== 'undefined' && google.script && google.script.run) {
+       google.script.run
+           .withSuccessHandler(sheetRows => {
+               if (sheetRows && sheetRows.error) {
+                   ui.sheetStatusMsg.textContent = `  فشل : ${sheetRows.error}`;
+                   return;
+               }
+               ui.sheetModal.style.display = 'none';
+               ui.sheetStatusMsg.textContent = '';
+               updatePreviewFromSheet(sheetRows);
+           })
+           .withFailureHandler(e => {
+               ui.sheetStatusMsg.textContent = `  فشل   في   جلب   بيانات   الشيت : ${e.message || e}`;
+           })
+           .getSheetRows(url);
+   } else {
+        ui.sheetStatusMsg.textContent = "Google Apps Script environment not found.";
+   }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function updatePreviewFromSheet(sheetRows) {
+    if (!Array.isArray(sheetRows) || sheetRows.length === 0) {
+        showMessage('الشيت فارغ أو حدث خطأ في قراءته.', 'error');
+        return;
+    }
+
+
+    const sheetQuestionMap = new Map(sheetRows.map(row => [row.question_id, row]));
+
+
+    // الخطوة 1: تحديد السكاشن التي أنشأها المستخدم في الواجهة
+    // كل شريحة تحمل علامة 'isCheckpoint' تعتبر بداية سكشن جديد
+    const uiSections = [];
+    let sectionCounter = 1;
+    allSlidesData.forEach(slide => {
+        if (slide.isCheckpoint) {
+            uiSections.push({
+                sectionNumber: sectionCounter,
+                startSlide: slide, 
+                questions: [] // لتجميع أسئلة هذا السكشن
+            });
+            sectionCounter++;
+        }
+    });
+
+
+    if (uiSections.length === 0) {
+        showMessage('يجب تحديد "بداية سكشن" على شريحة واحدة على الأقل.', 'error');
+        return;
+    }
+
+
+    // الخطوة 2: فصل الشرائح إلى ثابتة ومتحركة
+    const fixedSlides = []; 
+    const questionsToPlace = [];
+
+
+    allSlidesData.forEach(slide => {
+        if (slide.isQuestion && sheetQuestionMap.has(slide.questionId)) {
+            const sheetData = sheetQuestionMap.get(slide.questionId);
+            slide.placement = sheetData.question_placement || slide.placement;
+            slide.targetSectionNumber = parseInt(sheetData.section_no, 10);
+            questionsToPlace.push(slide);
+        } else {
+            fixedSlides.push(slide);
+        }
+    });
+
+
+    // الخطوة 3: توزيع الأسئلة المتحركة على السكاشن الصحيحة
+    questionsToPlace.forEach(question => {
+        const targetSection = uiSections.find(sec => sec.sectionNumber === question.targetSectionNumber);
+        if (targetSection) {
+            targetSection.questions.push(question);
+        } else {
+            fixedSlides.push(question); // أضفها للنهاية إذا لم تجد السكشن
+        }
+    });
+
+
+    // الخطوة 4: إعادة بناء القائمة النهائية بالمنطق الذكي
+    let finalSlides = [...fixedSlides]; 
+
+
+    // ابدأ من آخر سكشن لتجنب مشاكل تغير الـ index
+    uiSections.reverse().forEach(section => {
+        let headerStartIndex = finalSlides.findIndex(s => s === section.startSlide);
+        if (headerStartIndex === -1) return;
+
+
+        // ابحث عن نهاية "مقدمة السكشن"
+        let insertionIndex = headerStartIndex;
+        while (insertionIndex + 1 < finalSlides.length && !finalSlides[insertionIndex + 1].isQuestion) {
+            insertionIndex++;
+        }
+
+
+        // أدخل أسئلة السكشن بعد آخر شريحة شرح
+        finalSlides.splice(insertionIndex + 1, 0, ...section.questions);
+    });
+
+
+    allSlidesData = finalSlides;
+    renderSlides(allSlidesData);
+
+
+    showMessage(`تم تحديث الترتيب بنجاح بناءً على ${uiSections.length} سكشن.`, 'success');
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function renderSlides(slides) {
+   const scrollPosition = ui.slidesPreview.scrollTop;
+   ui.slidesPreview.innerHTML = slides.map((slide, index) => {
+       const isNotInSheet = slide.isQuestion && slide.notInSheet;
+       const isBank = slide.html && slide.html.includes('data-questionid');
+       const itemClasses = ['slide-item', slide.selected ? 'selected' : ''].filter(Boolean).join(' ');
+       const imageHtml = slide.imageUrl ? `<div class="slide-image-container"><img src="${slide.imageUrl}" class="slide-image" alt="  صورة   الشريحة " loading="lazy"></div>` : '';
+       const questionHtml = slide.isQuestion ? `
+           <div class="question-content">
+               <p class="question-body">${slide.questionBody || '  نص   السؤال   غير   متوفر ' }</p>
+               ${(slide.answerOptions && slide.answerOptions.length > 0) ? `
+               <ul class="answer-options">
+                   ${slide.answerOptions.map(option => `<li>${option}</li>`).join('')}
+               </ul>` : ''}
+           </div>` : '';
+       const placementHtml = slide.isQuestion ? `
+           <select class="placement-select" data-action="change-placement">
+               ${CONFIG.PLACEMENTS.map(p => `<option value="${p}" ${slide.placement === p ? 'selected' : ''}>${p}</option>`).join('')}
+           </select>` : '';
+       const details = [
+           slide.isQuestion ? `  معرف   السؤال : ${slide.questionId || 'N/A'}` : `  معرف   الشريحة : ${slide.slideId || 'N/A'}`,
+           slide.sectionTitle ? `  عنوان   القسم : ${slide.sectionTitle}` : null,
+           isBank ? `<span class='bank-badge'>بنك</span>` : null,
+           slide.isCheckpoint ? `<button class='checkpoint-badge' data-action='toggle-checkpoint'>Checkpoint</button>` : null
+       ].filter(Boolean).join(' • ');
+
+
+       // شارة الترقيم
+       const indexBadge = `<div class="slide-index-badge">${index + 1}</div>`;
+
+
+       // زر unlinked/linked
+       let unlinkedBtn = '';
+       if (slide.isQuestion && slide.isUnlinked) {
+           unlinkedBtn = `<button class="unlinked-badge" data-action="toggle-unlinked">unlinked</button>`;
+       } else if (slide.isQuestion && slide.isLinked) {
+           unlinkedBtn = `<span class="linked-badge">linked</span>`;
+       }
+
+
+       const deleteBtn = slide.isQuestion ? `<button class="btn btn-icon" data-action="delete-permanent" title="حذف نهائي">🗑️</button>` : '';
+
+
+       // --- ملحوظة للشرح/الأمثلة والأسئلة ---
+       let noteHtml = '';
+       if (!slide.isQuestion || slide.isQuestion) {
+         noteHtml = `
+           <div style="margin-top:10px;">
+             <label style="font-size:13px;color:#0072b4;font-weight:bold;">ملحوظة:</label>
+             <textarea class="slide-note-input" data-index="${index}" style="width:100%;min-height:40px;resize:vertical;border-radius:8px;padding:6px 10px;margin-top:4px;">${slide.note ? slide.note : ''}</textarea>
+           </div>
+         `;
+       }
+
+
+       return `
+           <div class="${itemClasses}" id="item-${index}" data-index="${index}">
+               ${indexBadge}
+               ${isNotInSheet ? '<div class="not-in-sheet-icon">❌</div>' : ''}
+               <div class="normal-view">
+                   <div class="slide-header">
+                       <div class="drag-handle">⠿</div>
+                       <input type="checkbox" class="slide-checkbox" id="slide-${index}" data-action="select" ${slide.selected ? 'checked' : ''}>
+                       <input type="number" class="move-to-input" data-action="move-to-position" placeholder="#" min="1" max="${slides.length}">
+                       ${!slide.isQuestion && slide.sectionId ? `<button class="btn-toggle-section-id ${slide.showSectionId ? 'active' : ''}" data-action="toggle-id">${slide.showSectionId ? '  إخفاء  ID' : '  إظهار  ID'}</button>` : ''}
+                       ${slide.isQuestion ? `<button class="btn-checkpoint ${slide.isCheckpoint ? 'active' : ''}" data-action="set-checkpoint">Checkpoint</button>` : ''}
+                       ${placementHtml}
+                       ${deleteBtn}
+                       ${unlinkedBtn}
+                       <div class="slide-title" id="title-${index}">${slide.title}${isBank ? " <span class='bank-badge'>بنك</span>" : ''}</div>
+                   </div>
+                   ${imageHtml}
+                   ${questionHtml}
+                   ${noteHtml}
+                   <div class="slide-details">${details}</div>
+               </div>
+               <div class="icon-view">
+                    <div class="drag-handle">⠿</div>
+                    <div class="slide-icon-preview" ${slide.imageUrl ? `style="background-image: url('${slide.imageUrl}')"` : ''}>${slide.imageUrl ? '' : (index + 1)}</div>
+                    <div class="slide-title-preview">${slide.originalTitle}</div>
+               </div>
+           </div>`;
+   }).join('');
+   ui.slidesPreview.scrollTop = scrollPosition;
+   initializeSortable();
+   updateImportButtonState();
+   updateUnlinkedCount(); // استدعِ updateUnlinkedCount بعد كل renderSlides
+
+
+   // --- حدث حفظ الملحوظة ---
+   document.querySelectorAll('.slide-note-input').forEach(textarea => {
+     textarea.addEventListener('input', function(e) {
+       const idx = parseInt(e.target.dataset.index, 10);
+       if (!isNaN(idx) && slides[idx]) {
+         slides[idx].note = e.target.value;
+       }
+     });
+   });
+}
+// --- Helper Functions ---
+function onApiError(error) {
+   setLoadingState(false);
+   const msg = (error && error.message) ? error.message : (typeof error === 'string' ? error : 'حدث خطأ غير متوقع');
+   showMessage(`  خطأ   غير   متوقع : ${msg}`, 'error');
+   exitPreviewMode();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function setLoadingState(loading, message = '  جارٍ التحميل ...') {
+   isLoading = loading;
+   ui.loading.style.display = loading ? 'block' : 'none';
+   if (loading) ui.loading.querySelector('.loading-text').textContent = message;
+   if (ui.body.classList.contains('preview-mode')) {
+       ui.slidesPreview.style.display = loading ? 'none' : 'block';
+   }
+   ui.previewBtn.disabled = loading || !ui.folderId.value.trim() || htmlSourceUrls.length === 0;
+   ui.importBtn.disabled = loading || allSlidesData.filter(s => s.selected).length === 0;
+   ui.selectAllBtn.disabled = loading;
+   ui.deselectAllBtn.disabled = loading;
+   ui.resetImportedBtn.disabled = loading;
+   ui.updateFromSheetBtn.disabled = loading;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function showMessage(message, type = 'success') {
+   const messageElement = document.createElement('div');
+   messageElement.className = `status-message status-${type}`;
+   messageElement.textContent = message;
+   ui.statusContainer.innerHTML = '';
+   ui.statusContainer.appendChild(messageElement);
+   setTimeout(() => {
+       if (ui.statusContainer.contains(messageElement)) {
+           ui.statusContainer.removeChild(messageElement);
+       }
+   }, 7000);
+}
+function enterPreviewMode() {
+   ui.body.classList.add('preview-mode');
+   ui.slidesPreview.style.display = 'block';
+   ui.loading.style.display = 'none';
+   updateFloatingToggleBtn();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function exitPreviewMode() {
+   ui.body.classList.remove('preview-mode');
+   ui.slidesPreview.style.display = 'none';
+   ui.statusContainer.innerHTML = '';
+   allSlidesData = [];
+   updateFloatingToggleBtn();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function selectAll(state) {
+   allSlidesData.forEach((slide, index) => {
+       slide.selected = state;
+       updateSlideVisuals(index);
+   });
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function updateImportButtonState() {
+   const checkedCount = allSlidesData.filter(s => s.selected).length;
+   ui.importBtn.disabled = checkedCount === 0 || isLoading;
+   ui.importBtn.innerHTML = checkedCount > 0 ? `📥  استيراد  ${checkedCount}    شريحة ` : '📥  استيراد   المحدد ';
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 function initializeSortable() {
-  if (sortableInstance) {
-    sortableInstance.destroy();
-  }
-  sortableInstance = new Sortable(ui.slidesPreview, {
-    animation: 150,
-    handle: '.drag-handle',
-    ghostClass: 'sortable-ghost',
-    chosenClass: 'sortable-chosen',
-    onEnd: function (evt) {
-      const { oldIndex, newIndex } = evt;
-      if (oldIndex === newIndex) return;
-      
-      const [movedItem] = allSlidesData.splice(oldIndex, 1);
-      allSlidesData.splice(newIndex, 0, movedItem);
-      
-      // Re-render to fix indices and data attributes
-      renderSlides(allSlidesData);
-    },
-  });
+   if (sortableInstance) {
+       sortableInstance.destroy();
+   }
+   sortableInstance = new Sortable(ui.slidesPreview, {
+       handle: '.drag-handle',
+       animation: 200,
+       ghostClass: 'sortable-ghost',
+       chosenClass: 'sortable-chosen',
+       onStart: () => ui.slidesPreview.classList.add('dragging-mode'),
+       onEnd: (evt) => {
+           ui.slidesPreview.classList.remove('dragging-mode');
+           moveSlide(evt.oldIndex, evt.newIndex, false);
+       }
+   });
 }
 
-function moveSlideToPosition(currentIndex, newPosition) {
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function addPreviewEventListeners() {
+   ui.slidesPreview.addEventListener('change', e => {
+       const slideItem = e.target.closest('.slide-item');
+       if (!slideItem) return;
+       const index = parseInt(slideItem.dataset.index, 10);
+       if (isNaN(index)) return;
+       if (e.target.dataset.action === 'select') {
+           allSlidesData[index].selected = e.target.checked;
+           updateSlideVisuals(index);
+       } else if (e.target.dataset.action === 'change-placement') {
+           allSlidesData[index].placement = e.target.value;
+           const newTitle = `${CONFIG.FINAL_SLIDE_TITLES[e.target.value] || 'سؤال'}: ${allSlidesData[index].originalTitle}`;
+           allSlidesData[index].title = newTitle;
+           document.getElementById(`title-${index}`).textContent = newTitle;
+       } else if (e.target.dataset.action === 'delete-permanent') {
+           if (confirm('هل أنت متأكد أنك تريد حذف هذا السؤال نهائيًا؟ لن يظهر مرة أخرى في أي معاينة أو استيراد حتى لو أعدت تحميل الشرائح أو أعدت تعيين المستورد.')) {
+               setLoadingState(true, 'جاري حذف السؤال نهائيًا؟ لن يظهر مرة أخرى في أي معاينة أو استيراد حتى لو أعدت تحميل الشرائح أو أعدت تعيين المستورد.');
+               if (typeof google !== 'undefined' && google.script && google.script.run) {
+                   google.script.run
+                       .withSuccessHandler(() => {
+                           setLoadingState(false);
+                           allSlidesData = allSlidesData.filter(s => s.questionId !== allSlidesData[index].questionId);
+                           renderSlides(allSlidesData);
+                           showMessage('تم حذف السؤال نهائيًا؟ لن يظهر مرة أخرى في أي معاينة أو استيراد حتى لو أعدت تحميل الشرائح أو أعدت تعيين المستورد.', 'success');
+                           // إظهار زر التراجع
+                           document.getElementById('undoUnlinkedContainer').style.display = 'block';
+                       })
+                       .withFailureHandler(err => {
+                           setLoadingState(false);
+                           onApiError(err);
+                       })
+                       .deletePermanentSlide(allSlidesData[index].questionId);
+               } else {
+                   onApiError({message: "Google Apps Script environment not found."});
+               }
+           }
+       }
+   });
+    ui.slidesPreview.addEventListener('click', e => {
+       const slideItem = e.target.closest('.slide-item');
+       if (!slideItem) return;
+       const index = parseInt(slideItem.dataset.index, 10);
+       if (isNaN(index)) return;
+       if (e.target.dataset.action === 'toggle-id') {
+           allSlidesData[index].showSectionId = !allSlidesData[index].showSectionId;
+           renderSlides(allSlidesData);
+       } else if (e.target.dataset.action === 'set-checkpoint') {
+           const isCurrentlyCheckpoint = allSlidesData[index].isCheckpoint;
+           allSlidesData.forEach(slide => slide.isCheckpoint = false);
+           allSlidesData[index].isCheckpoint = !isCurrentlyCheckpoint;
+           renderSlides(allSlidesData);
+       } else if (e.target.dataset.action === 'toggle-unlinked') {
+           // عكس الحالة
+           if (allSlidesData[index].isUnlinked) {
+               allSlidesData[index].isUnlinked = false;
+               allSlidesData[index].isLinked = true;
+           } else {
+               allSlidesData[index].isUnlinked = true;
+               allSlidesData[index].isLinked = false;
+           }
+           renderSlides(allSlidesData);
+       } else if (e.target.dataset.action === 'delete-permanent') {
+           // حذف نهائي
+           const slide = allSlidesData[index];
+           const id = slide.questionId || slide.slideId;
+           if (!id) return;
+           if (!confirm('هل أنت متأكد أنك تريد حذف هذا السؤال نهائيًا؟ لن يظهر مرة أخرى في أي معاينة أو استيراد حتى لو أعدت تحميل الشرائح أو أعدت تعيين المستورد.')) return;
+           allSlidesData.splice(index, 1);
+           renderSlides(allSlidesData);
+           if (typeof google !== 'undefined' && google.script && google.script.run) {
+               google.script.run.addToDeletedQuestions(id);
+           }
+       }
+   });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   ui.slidesPreview.addEventListener('keydown', e => {
+       if (e.key === 'Enter' && e.target.dataset.action === 'move-to-position') {
+           e.preventDefault();
+           const slideItem = e.target.closest('.slide-item');
+           if (!slideItem) return;
+           const index = parseInt(slideItem.dataset.index, 10);
+           const newPosition = parseInt(e.target.value, 10);
+           moveSlideToPosition(index, newPosition);
+       }
+   });
+}
+ function moveSlideToPosition(currentIndex, newPosition) {
     if (isNaN(newPosition) || newPosition < 1 || newPosition > allSlidesData.length) {
-        showMessage(`الرقم غير صالح. يرجى إدخال رقم بين 1 و ${allSlidesData.length}`, 'error');
+        showMessage(`  الرقم   غير   صالح .  يرجى   إدخال   رقم   بين  1  و  ${allSlidesData.length}`, 'error');
         const input = document.querySelector(`#item-${currentIndex} .move-to-input`);
         if(input) input.value = '';
         return;
     }
     const newIndex = newPosition - 1;
     if (newIndex !== currentIndex) {
-        const [movedItem] = allSlidesData.splice(currentIndex, 1);
-        allSlidesData.splice(newIndex, 0, movedItem);
-        renderSlides(allSlidesData);
-        // Optional: scroll to the moved item
-        setTimeout(() => {
-            const newItemElement = document.getElementById(`item-${newIndex}`);
-            if (newItemElement) {
-                newItemElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
-        }, 100);
+        moveSlide(currentIndex, newIndex, true);
     }
 }
 
-// ... other utility functions like reset, stats, sheet update, filter, unlinked ...
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function moveSlide(oldIndex, newIndex, shouldScroll = false) {
+   if (oldIndex < 0 || oldIndex >= allSlidesData.length || newIndex < 0 || newIndex >= allSlidesData.length) {
+       return;
+   }
+   const [movedItem] = allSlidesData.splice(oldIndex, 1);
+   allSlidesData.splice(newIndex, 0, movedItem);
+
+
+
+
+
+
+
+
+   // نقل العنصر في DOM مباشرة
+   const slidesPreview = ui.slidesPreview;
+   const oldElem = document.getElementById(`item-${oldIndex}`);
+   const newElem = document.getElementById(`item-${newIndex}`);
+   if (oldElem && newElem && oldElem !== newElem) {
+       if (newIndex > oldIndex) {
+           newElem.after(oldElem);
+       } else {
+           newElem.before(oldElem);
+       }
+       updateSlidesIndexing();
+   } else {
+       // fallback: إعادة رسم الكل إذا حدث خطأ
+       renderSlides(allSlidesData);
+   }
+
+
+
+
+
+
+
+
+   if (shouldScroll) {
+       const newItemElement = document.getElementById(`item-${newIndex}`);
+       if (newItemElement) {
+           newItemElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+       }
+   }
+}
+
+
+
+
+
+
+
+
+function updateSlidesIndexing() {
+   // تحديث أرقام الشرائح وخصائص العناصر بعد النقل
+   const items = ui.slidesPreview.querySelectorAll('.slide-item');
+   items.forEach((item, idx) => {
+       item.dataset.index = idx;
+       item.id = `item-${idx}`;
+       const badge = item.querySelector('.slide-index-badge');
+       if (badge) badge.textContent = idx + 1;
+       const checkbox = item.querySelector('.slide-checkbox');
+       if (checkbox) checkbox.id = `slide-${idx}`;
+       // تحديث التحديد
+       checkbox.checked = allSlidesData[idx].selected;
+       item.classList.toggle('selected', allSlidesData[idx].selected);
+   });
+   updateImportButtonState();
+}
+
+
+
+
+
+
+
+
+function updateSlideVisuals(index) {
+   const item = document.getElementById(`item-${index}`);
+   const checkbox = document.getElementById(`slide-${index}`);
+   if (!item || !checkbox) return;
+   item.classList.toggle('selected', allSlidesData[index].selected);
+   checkbox.checked = allSlidesData[index].selected;
+   updateImportButtonState();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 function resetImportedSlides() {
-    if (confirm('هل أنت متأكد أنك تريد إعادة تعيين قائمة الشرائح المستوردة؟')) {
-        setLoadingState(true, 'جارٍ إعادة التعيين...');
-        google.script.run
-            .withSuccessHandler(() => {
-                setLoadingState(false);
-                showMessage('تمت إعادة تعيين الشرائح المستوردة بنجاح.', 'success');
-                // Re-run preview to show all slides again
-                if (ui.body.classList.contains('preview-mode')) {
-                    handlePreview();
-                }
-            })
-            .withFailureHandler(onApiError)
-            .resetImportedSlidesServer();
-    }
+   if (confirm('  هل   أنت   متأكد   أنك   تريد   إعادة   تعيين   قائمة   الشرائح   المستوردة؟ سيؤدي   هذا   إلى   ظهور   جميع   الشرائح   مرة   أخرى   في   المعاينة .')) {
+       setLoadingState(true, '  جارٍ إعادة   التعيين ...');
+       if (typeof google !== 'undefined' && google.script && google.script.run) {
+           google.script.run
+               .withSuccessHandler(() => {
+                   setLoadingState(false);
+                   allSlidesData.forEach(s => s.isImported = false);
+                   renderSlides(allSlidesData);
+                   showMessage('  تمت   إعادة   تعيين   الشرائح   المستوردة   بنجاح .', 'success');
+               })
+               .withFailureHandler(err => {
+                   setLoadingState(false);
+                   onApiError(err);
+               })
+               .resetImportedSlidesServer();
+       } else {
+           onApiError({message: "Google Apps Script environment not found."});
+       }
+   }
 }
 
-function showQuickStatsModal() {
-    const stats = allSlidesData.reduce((acc, slide) => {
-        acc.total++;
-        if (slide.isQuestion) {
-            acc.questions++;
-            const p = slide.placement || 'unassigned';
-            acc.placements[p] = (acc.placements[p] || 0) + 1;
-        } else {
-            acc.explain++;
-        }
-        if (slide.isCheckpoint) acc.checkpoints++;
-        return acc;
-    }, { total: 0, questions: 0, explain: 0, checkpoints: 0, placements: {} });
 
-    let placementHtml = Object.entries(stats.placements).map(([p, count]) => `<li>• ${p}: ${count}</li>`).join('');
-    ui.quickStatsContent.innerHTML = `
-        <ul style="list-style:none;padding:0;line-height:2;">
-            <li><b>إجمالي الشرائح:</b> ${stats.total}</li>
-            <li><b>شرائح الشرح:</b> ${stats.explain}</li>
-            <li><b>الأسئلة:</b> ${stats.questions}</li>
-            <li><b>Checkpoints:</b> ${stats.checkpoints}</li>
-            ${placementHtml ? `<li><b>تفصيل الأسئلة:</b><ul>${placementHtml}</ul></li>` : ''}
-        </ul>`;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// --- Stats Modal Logic ---
+function showQuickStatsModal() {
+    const stats = calculateQuickStats(allSlidesData);
+    ui.quickStatsContent.innerHTML = renderQuickStatsHtml(stats);
     ui.quickStatsModal.style.display = 'flex';
 }
 
-function applyFilter() {
-    const filterType = document.querySelector('input[name="filterType"]:checked')?.value || 'all';
-    const selectedPlacements = Array.from(document.querySelectorAll('input[name="placementFilter"]:checked')).map(cb => cb.value);
 
-    const filteredData = allSlidesData.filter(slide => {
-        let passesTypeFilter = false;
-        switch (filterType) {
-            case 'questions': passesTypeFilter = slide.isQuestion; break;
-            case 'explain': passesTypeFilter = !slide.isQuestion; break;
-            case 'checkpoint': passesTypeFilter = slide.isCheckpoint; break;
-            default: passesTypeFilter = true;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function calculateQuickStats(slides) {
+    let total = 0, totalQuestions = 0, totalExamples = 0, importedCount = 0, remainingCount = 0, bankCount = 0, checkpointCount = 0, explainSlides = 0;
+    const placementCounts = {};
+    slides.forEach(slide => {
+        total++;
+        if (!slide.isQuestion) explainSlides++;
+        if (slide.isCheckpoint) checkpointCount++;
+        if (slide.isQuestion) {
+            totalQuestions++;
         }
-
-        let passesPlacementFilter = selectedPlacements.length === 0 || (slide.isQuestion && selectedPlacements.includes(slide.placement));
-
-        return passesTypeFilter && passesPlacementFilter;
-    });
-
-    // We don't re-render, we just hide/show elements to preserve state
-    allSlidesData.forEach((slide, index) => {
-        const item = document.getElementById(`item-${index}`);
-        if (item) {
-            item.style.display = filteredData.includes(slide) ? 'flex' : 'none';
+        if (slide.placement === 'example') totalExamples++;
+        if (slide.isImported) importedCount++;
+        else remainingCount++;
+        if (slide.html && slide.html.includes('data-questionid')) bankCount++;
+        // حساب أنواع الـ placement
+        if (slide.placement) {
+            placementCounts[slide.placement] = (placementCounts[slide.placement] || 0) + 1;
         }
     });
-
-    ui.filterModal.style.display = 'none';
+    return { total, explainSlides, checkpointCount, totalQuestions, totalExamples, importedCount, remainingCount, bankCount, placementCounts };
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function renderQuickStatsHtml(stats) {
+    return `
+    <ul style="list-style:none;padding:0;margin:0 0 12px 0;line-height:2;">
+        <li>🔢 <b>إجمالي الشرائح:</b> ${stats.total}</li>
+        <li>📖 <b>إجمالي شرائح الشرح:</b> ${stats.explainSlides}</li>
+        <li style="color:#f59e0b;"><b>🟧 عدد شرائح التشيك بوينت:</b> ${stats.checkpointCount}</li>
+        <li>❓ <b>إجمالي عدد الأسئلة:</b> ${stats.totalQuestions}</li>
+        <li style="margin-top:6px;"><b>تفصيل الأنواع حسب placement:</b></li>
+        ${Object.entries(stats.placementCounts).map(([placement, count]) =>
+            `<li style='margin-bottom:2px;'>• <span style='color:#7c3aed;font-weight:bold;'>${placement}</span>: <span style='color:#1e293b;'>${count}</span></li>`
+        ).join('')}
+    </ul>
+    <div style="margin-top:10px;"><b>تفاصيل الأنواع:</b>
+        <ul style="list-style:none;padding:0;margin:0;">
+            <li style="color:#ef4444;"><b>🏦 أسئلة بنك نجوي:</b> ${stats.bankCount}</li>
+        </ul>
+    </div>
+`;
+}
+// Make CONFIG available to client-side JS
+const CONFIG = {
+   PLACEMENTS: ['live', 'example', 'ai', 'homework', 'interactive example', 'not_homework'],
+   FINAL_SLIDE_TITLES: {
+       'live': '  سؤال  ',
+       'ai': '  سؤال  ',
+       'homework': '  سؤال  ',
+       'example': '  مثال  ',
+       'interactive example': '  سؤال  ',
+       'not_homework': '  سؤال  '
+   }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function applyFilter() {
+// نوع الفلتر الرئيسي
+const filterType = document.querySelector('input[name="filterType"]:checked')?.value || 'all';
+// أنواع placement المختارة
+const placementCheckboxes = document.querySelectorAll('input[name="placementFilter"]:checked');
+const selectedPlacements = Array.from(placementCheckboxes).map(cb => cb.value);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+let filteredSlides = allSlidesData;
+// تصفية حسب نوع الفلتر
+if (filterType === 'questions') {
+    filteredSlides = filteredSlides.filter(slide => slide.isQuestion);
+} else if (filterType === 'explain') {
+    filteredSlides = filteredSlides.filter(slide => !slide.isQuestion);
+} else if (filterType === 'checkpoint') {
+    filteredSlides = filteredSlides.filter(slide => slide.isCheckpoint);
+}
+// تصفية حسب placement إذا تم اختيار أي منها
+if (selectedPlacements.length > 0) {
+    filteredSlides = filteredSlides.filter(slide => selectedPlacements.includes(slide.placement));
+}
+renderSlides(filteredSlides);
+// إغلاق نافذة الفلترة
+ui.filterModal.style.display = 'none';
+}
+
+
+
+
+
+
+
 
 function updateUnlinkedCount() {
-    const count = allSlidesData.filter(s => s.isUnlinked).length;
-    ui.unlinkedCount.textContent = count;
-    ui.unlinkedCountBtn.style.display = count > 0 ? 'inline-flex' : 'none';
+   const count = allSlidesData.filter(s => s.isUnlinked && s.questionId && s.questionId.length === 12).length;
+   const btn = document.getElementById('unlinkedCountBtn');
+   const span = document.getElementById('unlinkedCount');
+   if (btn && span) {
+       span.textContent = count;
+       btn.style.display = count > 0 ? 'inline-block' : 'none';
+   }
+   // أخفِ زر التراجع إذا لم يوجد unlinked
+   const undoBtn = document.getElementById('undoUnlinkedBtn');
+   if (undoBtn && count === 0) {
+       undoBtn.style.display = 'none';
+   }
 }
 
-function showUnlinkedModal() {
-    const unlinkedIds = allSlidesData.filter(s => s.isUnlinked && s.questionId).map(s => s.questionId);
-    if (unlinkedIds.length === 0) {
-        ui.unlinkedModalBody.innerHTML = '<div>لا يوجد أسئلة unlinked.</div>';
-    } else {
-        ui.unlinkedModalBody.innerHTML = `<div style="margin-bottom:8px;">عدد الأسئلة: <b>${unlinkedIds.length}</b></div><textarea id="unlinkedIdsArea" style="width:100%;height:120px;" readonly>${unlinkedIds.join('\n')}</textarea>`;
-    }
-    ui.unlinkedModal.style.display = 'flex';
+
+
+
+
+
+
+
+// منطق إظهار/إخفاء الزر العائم حسب وضع المعاينة
+function updateFloatingToggleBtn() {
+   const btn = document.getElementById('toggleHeaderFooterBtn');
+   if (!btn) return;
+   if (document.body.classList.contains('preview-mode')) {
+       btn.style.display = 'inline-block';
+   } else {
+       btn.style.display = 'none';
+   }
 }
-
-function copyUnlinkedIds() {
-    const area = document.getElementById('unlinkedIdsArea');
-    if (area) {
-        navigator.clipboard.writeText(area.value).then(() => {
-            showMessage(`تم نسخ ${area.value.split('\n').filter(Boolean).length} ID`, 'success');
-        }, () => {
-            showMessage('فشل النسخ. يرجى النسخ يدوياً.', 'error');
-        });
-    }
-}
-
-function deleteUnlinkedSlides() {
-    if (confirm('هل أنت متأكد أنك تريد حذف جميع الأسئلة unlinked من المعاينة؟')) {
-        const unlinkedCount = allSlidesData.filter(s => s.isUnlinked).length;
-        allSlidesData = allSlidesData.filter(s => !s.isUnlinked);
-        renderSlides(allSlidesData);
-        ui.unlinkedModal.style.display = 'none';
-        showMessage(`تم حذف ${unlinkedCount} شريحة unlinked.`, 'success');
-    }
-}
-
-function applySheetData() {
-    const url = ui.sheetUrlInput.value.trim();
-    if (!url) {
-        ui.sheetStatusMsg.textContent = 'يرجى إدخال رابط الشيت.';
-        return;
-    }
-    ui.sheetStatusMsg.textContent = 'جاري جلب البيانات من الشيت...';
-    google.script.run
-        .withSuccessHandler(sheetRows => {
-            if (sheetRows && sheetRows.error) {
-                ui.sheetStatusMsg.textContent = `فشل: ${sheetRows.error}`;
-                return;
-            }
-            ui.sheetModal.style.display = 'none';
-            ui.sheetStatusMsg.textContent = '';
-            updatePreviewFromSheet(sheetRows);
-        })
-        .withFailureHandler(e => {
-            ui.sheetStatusMsg.textContent = `فشل في جلب بيانات الشيت: ${e.message || e}`;
-        })
-        .getSheetRows(url);
-}
-
-function updatePreviewFromSheet(sheetRows) {
-    if (!Array.isArray(sheetRows)) {
-        showMessage('فشل في جلب بيانات الشيت أو تنسيق غير صحيح.', 'error');
-        return;
-    }
-    const sheetQuestionMap = new Map(sheetRows.map(row => [row.question_id, row]));
-    let foundInSheet = 0;
-    
-    allSlidesData.forEach(slide => {
-        if (slide.isQuestion && sheetQuestionMap.has(slide.questionId)) {
-            const sheetData = sheetQuestionMap.get(slide.questionId);
-            slide.placement = sheetData.question_placement || slide.placement;
-            slide.notInSheet = false;
-            foundInSheet++;
-        } else if (slide.isQuestion) {
-            slide.notInSheet = true;
-        }
-    });
-
-    renderSlides(allSlidesData);
-    const notFoundCount = allSlidesData.filter(s => s.isQuestion).length - foundInSheet;
-    showMessage(`تم التحديث. ${foundInSheet} سؤال مطابق للشيت، و ${notFoundCount} سؤال غير مطابق (مميز بعلامة ❌).`, 'success');
-}
-
 </script>
 </body>
 </html>
+
+
