@@ -1,7 +1,7 @@
 /**
 * @OnlyCurrentDoc
 *
-* Final Version 2.9.7:
+* Final Version 3:
 * - Corrected the automatic placement logic in `importSelectedSlides` to ensure it
 * only affects slides at or after the checkpoint's position in the selection.
 * - Slides selected *before* the checkpoint now correctly retain their manually
@@ -9,1180 +9,1044 @@
 */
 
 
-
-
 // =====================
 //  Global Configuration - الإعدادات العامة للمشروع
 // =====================
 const CONFIG = {
-  UI: {
-      MENU_TITLE: '📥    استيراد   HTML (v2.9.7)',
-      IMPORT_ITEM: '   فتح     واجهة     الاستيراد   ',
-      DIALOG_TITLE: '   مستورد     الشرائح     التفاعلي   ',
-      DIALOG_WIDTH: 1200,
-      DIALOG_HEIGHT: 800,
-      TITLE_FILL_COLOR: '#0072b4',
-      TITLE_FONT_COLOR: '#FFFFFF',
-  },
-  LAYOUT: {
-      ID_BOX_FILL_COLOR: '#f3f4f6',
-      ID_BOX_BORDER_COLOR: '#d1d5db',
-      ID_BOX_FONT_COLOR: '#000000',
-      ID_BOX_VALUE_FONT_COLOR: '#FF0000',
-      ID_BOX_WIDTH: 220,
-      QUESTION_CONTENT_TOP: 80,
-  },
-  REGEX: {
-      DRIVE_FILE_ID: /[-\w]{25,}/,
-      BANK_SLIDE_SECTION: /<div[^>]*class="instance dir-rtl\s*"\s*data-questionid="[^"]*">[\s\S]*?<\/div>(?=\s*<div[^>]*class="instance dir-rtl\s*"|$)/g,
-      SESSION_SLIDE_SECTION: /<section class="col-12">[\s\S]*?<\/section>/g,
-      TITLE_TEXT: /<div class="question-number[^>]*"><p>([\s\S]*?)<\/p><\/div>/,
-      IMAGE_SRC: /<img.*?src=["'](?:static\/)?(.*?\.[\w]+)["']/,
-      BANK_IMAGE_URL: /<img[^>]*class="displayed-image"[^>]*src=["'](.*?)["']/,
-      SESSION_QUESTION_BODY: /<div class="stem"[^>]*>([\s\S]*?)(?:<div class="answers">|<ul class="mcq_choices">)/,
-      BANK_QUESTION_BODY: /<div class="stem"[^>]*>([\s\S]*?)(?:<div class="answers">|<ul class="mcq_choices">)/,
-      QUERY_QUESTION_BODY: /<div class="question-body">\s*<p>(.*?)<\/p>\s*<\/div>/s,
-      ANSWER_OPTIONS: /<li[^>]*>([\s\S]*?)<\/li>/g,
-      BANK_QUESTION_ID_ATTR: /data-questionid="([\d\.]+)"/,
-      BANK_IS_QUESTION_ATTR: /data-parttype="(mcq|frq|frq_ai)"/,
-      SESSION_METADATA_BLOCK: /<div class="container second-container">([\s\S]*?)<\/div>/,
-      SESSION_METADATA_ITEM: /<strong>(.*?)<\/strong>:\s*(.*?)(?=<p><strong>|$)/g,
-      SESSION_QUESTION_ID: /<div class="question-number.*?"><p>([\d\.]+)<\/p><\/div>/,
-      QUERY_QUESTION_ID: /<p>Question ID: ([\d\.]+)<\/p>/,
-      QUESTION_TITLE: /<p class="question-title-text">(.*?)<\/p>/,
-      ANSWER_CHOICE: /<label class="answer-choice.*?">\s*<p>(.*?)<\/p>\s*<\/label>/g,
-      CORRECT_ANSWER: /<p class="correct-answer">(.*?)<\/p>/,
-      IMAGE_NAME: /<img.*?src=["'](.*?)["']/,
-  },
-  PROPERTIES: {
-      IMPORTED_IDS: 'IMPORTED_SLIDE_IDS',
-      PREVIEW_STATE: 'PREVIEW_STATE'
-  },
-  PLACEMENTS: ['live', 'example', 'ai', 'homework', 'interactive example', 'not_homework'],
-  FINAL_SLIDE_TITLES: {
-      'live': '   سؤال   ',
-      'ai': '   سؤال   ',
-      'homework': '   سؤال   ',
-      'example': '   مثال   ',
-      'interactive example': '   سؤال   '
-  }
+ UI: {
+     MENU_TITLE: '📥    استيراد   HTML (v3)',
+     IMPORT_ITEM: '   فتح     واجهة     الاستيراد   ',
+     DIALOG_TITLE: '   مستورد     الشرائح     التفاعلي   ',
+     DIALOG_WIDTH: 1200,
+     DIALOG_HEIGHT: 800,
+     TITLE_FILL_COLOR: '#0072b4',
+     TITLE_FONT_COLOR: '#FFFFFF',
+ },
+ LAYOUT: {
+     ID_BOX_FILL_COLOR: '#f3f4f6',
+     ID_BOX_BORDER_COLOR: '#d1d5db',
+     ID_BOX_FONT_COLOR: '#000000',
+     ID_BOX_VALUE_FONT_COLOR: '#FF0000',
+     ID_BOX_WIDTH: 220,
+     QUESTION_CONTENT_TOP: 80,
+ },
+ REGEX: {
+     DRIVE_FILE_ID: /[-\w]{25,}/,
+BANK_SLIDE_SECTION: /<div[^>]*class="instance dir-rtl\s*"\s*data-questionid="[^"]*">[\s\S]*?<\/div>(?=\s*<div[^>]*class="instance dir-rtl\s*"|\s*$)/g,
+
+
+     SESSION_SLIDE_SECTION: /<section class="col-12">[\s\S]*?<\/section>/g,
+     TITLE_TEXT: /<div class="question-number[^>]*"><p>([\s\S]*?)<\/p><\/div>/,
+     IMAGE_SRC: /<img.*?src=["'](?:static\/)?(.*?\.[\w]+)["']/,
+     BANK_IMAGE_URL: /<img[^>]*class="displayed-image"[^>]*src=["'](.*?)["']/,
+     SESSION_QUESTION_BODY: /<div class="stem"[^>]*>([\s\S]*?)(?:<div class="answers">|<ul class="mcq_choices">)/,
+     BANK_QUESTION_BODY: /<div class="stem"[^>]*>([\s\S]*?)(?:<div class="answers">|<ul class="mcq_choices">)/,
+     QUERY_QUESTION_BODY: /<div class="question-body">\s*<p>(.*?)<\/p>\s*<\/div>/s,
+     ANSWER_OPTIONS: /<li[^>]*>([\s\S]*?)<\/li>/g,
+     BANK_QUESTION_ID_ATTR: /data-questionid="([\d\.]+)"/,
+     BANK_IS_QUESTION_ATTR: /data-parttype="(mcq|frq|frq_ai)"/,
+     SESSION_METADATA_BLOCK: /<div class="container second-container">([\s\S]*?)<\/div>/,
+     SESSION_METADATA_ITEM: /<strong>(.*?)<\/strong>:\s*(.*?)(?=<p><strong>|$)/g,
+     SESSION_QUESTION_ID: /<div class="question-number.*?"><p>([\d\.]+)<\/p><\/div>/,
+     QUERY_QUESTION_ID: /<p>Question ID: ([\d\.]+)<\/p>/,
+     QUESTION_TITLE: /<p class="question-title-text">(.*?)<\/p>/,
+     ANSWER_CHOICE: /<label class="answer-choice.*?">\s*<p>(.*?)<\/p>\s*<\/label>/g,
+     CORRECT_ANSWER: /<p class="correct-answer">(.*?)<\/p>/,
+     IMAGE_NAME: /<img.*?src=["'](.*?)["']/,
+ },
+ PROPERTIES: {
+     IMPORTED_IDS: 'IMPORTED_SLIDE_IDS',
+     PREVIEW_STATE: 'PREVIEW_STATE'
+ },
+ PLACEMENTS: ['live', 'example', 'ai', 'homework', 'interactive example', 'not_homework'],
+ FINAL_SLIDE_TITLES: {
+     'live': '   سؤال   ',
+     'ai': '   سؤال   ',
+     'homework': '   سؤال   ',
+     'example': '   مثال   ',
+     'interactive example': '   سؤال   '
+ }
 };
-
-
 
 
 // =====================
 //  UI & Menu Functions - دوال إنشاء القائمة والواجهة
 // =====================
 function onOpen(e) {
-  SlidesApp.getUi()
-      .createMenu(CONFIG.UI.MENU_TITLE)
-      .addItem(CONFIG.UI.IMPORT_ITEM, 'showImportDialog')
-      .addToUi();
+ SlidesApp.getUi()
+     .createMenu(CONFIG.UI.MENU_TITLE)
+     .addItem(CONFIG.UI.IMPORT_ITEM, 'showImportDialog')
+     .addToUi();
 }
-
-
 
 
 function showImportDialog() {
-  const htmlOutput = HtmlService.createHtmlOutputFromFile('Dialog')
-      .setWidth(CONFIG.UI.DIALOG_WIDTH)
-      .setHeight(CONFIG.UI.DIALOG_HEIGHT);
-  SlidesApp.getUi().showModalDialog(htmlOutput, CONFIG.UI.DIALOG_TITLE);
+ const htmlOutput = HtmlService.createHtmlOutputFromFile('Dialog')
+     .setWidth(CONFIG.UI.DIALOG_WIDTH)
+     .setHeight(CONFIG.UI.DIALOG_HEIGHT);
+ SlidesApp.getUi().showModalDialog(htmlOutput, CONFIG.UI.DIALOG_TITLE);
 }
-
-
 
 
 // =====================
 //  Data Persistence Functions - دوال حفظ واسترجاع البيانات
 // =====================
 function savePreviewState(slidesState) {
-  try {
-      const properties = PropertiesService.getUserProperties();
-      properties.setProperty(CONFIG.PROPERTIES.PREVIEW_STATE, JSON.stringify(slidesState || []));
-      return {
-          status: 'success'
-      };
-  } catch (e) {
-      Logger.log(`Error in savePreviewState: ${e.stack}`);
-      return {
-          status: 'error',
-          message: e.message
-      };
-  }
+ try {
+     const properties = PropertiesService.getUserProperties();
+     properties.setProperty(CONFIG.PROPERTIES.PREVIEW_STATE, JSON.stringify(slidesState || []));
+     return {
+         status: 'success'
+     };
+ } catch (e) {
+     Logger.log(`Error in savePreviewState: ${e.stack}`);
+     return {
+         status: 'error',
+         message: e.message
+     };
+ }
 }
-
-
 
 
 function saveUserData(htmlFileUrls, folderId) {
-  try {
-      const properties = PropertiesService.getUserProperties();
-      properties.setProperty('htmlFileUrls', JSON.stringify(htmlFileUrls || []));
-      properties.setProperty('imageFolderId', folderId || '');
-      return {
-          status: 'success'
-      };
-  } catch (e) {
-      Logger.log(`Error in saveUserData: ${e.stack}`);
-      return {
-          status: 'error',
-          message: e.message
-      };
-  }
+ try {
+     const properties = PropertiesService.getUserProperties();
+     properties.setProperty('htmlFileUrls', JSON.stringify(htmlFileUrls || []));
+     properties.setProperty('imageFolderId', folderId || '');
+     return {
+         status: 'success'
+     };
+ } catch (e) {
+     Logger.log(`Error in saveUserData: ${e.stack}`);
+     return {
+         status: 'error',
+         message: e.message
+     };
+ }
 }
-
-
 
 
 function getSavedUserData() {
-  const properties = PropertiesService.getUserProperties();
-  const htmlFileUrls = properties.getProperty('htmlFileUrls');
-  const imageFolderId = properties.getProperty('imageFolderId');
-  return {
-      htmlFileUrls: htmlFileUrls ? JSON.parse(htmlFileUrls) : [],
-      imageFolderId: imageFolderId || ''
-  };
+ const properties = PropertiesService.getUserProperties();
+ const htmlFileUrls = properties.getProperty('htmlFileUrls');
+ const imageFolderId = properties.getProperty('imageFolderId');
+ return {
+     htmlFileUrls: htmlFileUrls ? JSON.parse(htmlFileUrls) : [],
+     imageFolderId: imageFolderId || ''
+ };
 }
-
-
 
 
 // =====================
 //  Core Importer Functions - دوال الاستيراد الأساسية
 // =====================
 function getSlidesForPreview(fileUrls, folderId) {
-  try {
-      if (!fileUrls || fileUrls.length === 0) {
-          throw new Error('رابط ملف HTML واحد على الأقل مطلوب.');
-      }
+ try {
+     if (!fileUrls || fileUrls.length === 0) {
+         throw new Error('رابط ملف HTML واحد على الأقل مطلوب.');
+     }
 
 
+     let allSlides = [];
+     const importedIds = getImportedSlidesIds();
+     const deletedQuestions = getDeletedQuestions();
+     const sessionQuestionIds = new Set();
+     const sessionBaseIds = new Set();
+     const bankQuestionIds = new Set();
+     const bankBaseIds = new Set();
 
 
-      let allSlides = [];
-      const importedIds = getImportedSlidesIds();
-      const deletedQuestions = getDeletedQuestions();
-      const sessionQuestionIds = new Set();
-      const bankQuestionIds = new Set();
+     // Pass 1: Process session file (first URL) and collect its question IDs.
+     if (fileUrls[0]) {
+         const fileId = (fileUrls[0].match(CONFIG.REGEX.DRIVE_FILE_ID) || [])[0];
+         if (fileId) {
+             const htmlContent = DriveApp.getFileById(fileId).getBlob().getDataAsString('UTF-8');
+             const blocks = htmlContent.match(CONFIG.REGEX.SESSION_SLIDE_SECTION) || [];
+             blocks.forEach((block, index) => {
+                 const slideData = parseSessionFormat(block, index);
+                 if (slideData) {
+                     allSlides.push(slideData);
+                     if (slideData.isQuestion && slideData.questionId) {
+                         sessionQuestionIds.add(slideData.questionId);
+                         // اجمع baseId (قبل النقطة) لكل سؤال
+                         const baseId = slideData.questionId.split('.')[0];
+                         sessionBaseIds.add(baseId);
+                     }
+                 }
+             });
+         }
+     }
 
 
+     // Pass 2: Process bank files, collect their IDs, and add only non-duplicate questions.
+     for (let i = 1; i < fileUrls.length; i++) {
+         const fileUrl = fileUrls[i];
+         if (!fileUrl) continue;
+         const fileId = (fileUrl.match(CONFIG.REGEX.DRIVE_FILE_ID) || [])[0];
+         if (fileId) {
+             const htmlContent = DriveApp.getFileById(fileId).getBlob().getDataAsString('UTF-8');
+             const blocks = htmlContent.match(CONFIG.REGEX.BANK_SLIDE_SECTION) || [];
+             blocks.forEach((block, index) => {
+                 const slidesFromBank = parseBankFormat(block, index);
+                 if (slidesFromBank && slidesFromBank.length > 0) {
+                     slidesFromBank.forEach(slide => {
+                         if (slide.questionId) {
+                             bankQuestionIds.add(slide.questionId);
+                             // اجمع baseId (قبل النقطة) لكل سؤال
+                             const baseId = slide.questionId.split('.')[0];
+                             bankBaseIds.add(baseId);
+                         }
+                         if (slide.questionId && !sessionQuestionIds.has(slide.questionId)) {
+                             allSlides.push(slide);
+                         }
+                     });
+                 }
+             });
+         }
+     }
 
 
-      // Pass 1: Process session file (first URL) and collect its question IDs.
-      if (fileUrls[0]) {
-          const fileId = (fileUrls[0].match(CONFIG.REGEX.DRIVE_FILE_ID) || [])[0];
-          if (fileId) {
-              const htmlContent = DriveApp.getFileById(fileId).getBlob().getDataAsString('UTF-8');
-              const blocks = htmlContent.match(CONFIG.REGEX.SESSION_SLIDE_SECTION) || [];
-              blocks.forEach((block, index) => {
-                  const slideData = parseSessionFormat(block, index);
-                  if (slideData) {
-                      allSlides.push(slideData);
-                      if (slideData.isQuestion && slideData.questionId) {
-                          sessionQuestionIds.add(slideData.questionId.split('.')[0]); // Add base ID
-                      }
-                  }
-              });
-          }
-      }
+     // Mark session questions as "linked bank" إذا كان baseId (قبل النقطة) موجود في البنك
+     allSlides.forEach(slide => {
+         if (slide.isQuestion) {
+             const baseId = slide.questionId ? slide.questionId.split('.')[0] : null;
+             if (baseId && bankBaseIds.has(baseId)) {
+                 slide.linkedBank = true;
+                 if (slide.title && !slide.title.includes('linked bank')) {
+                     slide.title += ' [linked bank]';
+                 }
+             } else {
+                 slide.linkedBank = false;
+             }
+         }
+     });
 
 
+     // Mark session questions as "unlinked" فقط إذا لم يوجد baseId في البنك
+     allSlides.forEach(slide => {
+         if (slide.isQuestion) {
+             const baseId = slide.questionId ? slide.questionId.split('.')[0] : null;
+             if (baseId && !bankBaseIds.has(baseId)) {
+                 slide.isUnlinked = true;
+             } else {
+                 slide.isUnlinked = false;
+             }
+         }
+     });
 
 
-      // Pass 2: Process bank files, collect their IDs, and add only non-duplicate questions.
-      for (let i = 1; i < fileUrls.length; i++) {
-          const fileUrl = fileUrls[i];
-          if (!fileUrl) continue;
-          const fileId = (fileUrl.match(CONFIG.REGEX.DRIVE_FILE_ID) || [])[0];
-          if (fileId) {
-              const htmlContent = DriveApp.getFileById(fileId).getBlob().getDataAsString('UTF-8');
-              const blocks = htmlContent.match(CONFIG.REGEX.BANK_SLIDE_SECTION) || [];
-              blocks.forEach((block, index) => {
-                  const slidesFromBank = parseBankFormat(block, index);
-                  if (slidesFromBank && slidesFromBank.length > 0) {
-                      const baseId = slidesFromBank[0].questionId.split('.')[0];
-                      bankQuestionIds.add(baseId);
-                      // Add bank questions only if they are not already in the session
-                      if (!sessionQuestionIds.has(baseId)) {
-                          allSlides.push(...slidesFromBank);
-                      }
-                  }
-              });
-          }
-      }
+     // Final filtering of already imported or deleted slides
+     allSlides = allSlides.filter(slide => {
+         const id = slide.questionId || slide.slideId;
+         return id && !importedIds[id] && !deletedQuestions.includes(id);
+     });
 
 
+     // Image processing
+     if (folderId) {
+         const imageFolder = DriveApp.getFolderById(folderId);
+         const imageMap = new Map();
+         const imageFiles = imageFolder.getFiles();
+         while (imageFiles.hasNext()) {
+             const file = imageFiles.next();
+             imageMap.set(file.getName(), file.getBlob());
+         }
+         allSlides.forEach(slideData => {
+             if (slideData.imageName && imageMap.has(slideData.imageName)) {
+                 const blob = imageMap.get(slideData.imageName);
+                 if (blob.getBytes().length < 4 * 1024 * 1024) { // 4MB limit
+                     slideData.imageUrl = `data:${blob.getContentType()};base64,${Utilities.base64Encode(blob.getBytes())}`;
+                 }
+             }
+         });
+     }
 
 
-      // Pass 3: Mark session questions as "unlinked" if they don't appear in any bank.
-      allSlides.forEach(slide => {
-          if (slide.isQuestion && sessionQuestionIds.has(slide.questionId) && !bankQuestionIds.has(slide.questionId)) {
-              slide.isUnlinked = true;
-          } else {
-              slide.isUnlinked = false;
-          }
-      });
+     return allSlides;
 
 
-
-
-      // Final filtering of already imported or deleted slides
-      allSlides = allSlides.filter(slide => {
-          const id = slide.questionId || slide.slideId;
-          return id && !importedIds[id] && !deletedQuestions.includes(id);
-      });
-
-
-
-
-      // Image processing
-      if (folderId) {
-          const imageFolder = DriveApp.getFolderById(folderId);
-          const imageMap = new Map();
-          const imageFiles = imageFolder.getFiles();
-          while (imageFiles.hasNext()) {
-              const file = imageFiles.next();
-              imageMap.set(file.getName(), file.getBlob());
-          }
-          allSlides.forEach(slideData => {
-              if (slideData.imageName && imageMap.has(slideData.imageName)) {
-                  const blob = imageMap.get(slideData.imageName);
-                  if (blob.getBytes().length < 4 * 1024 * 1024) { // 4MB limit
-                      slideData.imageUrl = `data:${blob.getContentType()};base64,${Utilities.base64Encode(blob.getBytes())}`;
-                  }
-              }
-          });
-      }
-
-
-
-
-      return allSlides;
-
-
-
-
-  } catch (e) {
-      Logger.log(`Error in getSlidesForPreview: ${e.stack}`);
-      return {
-          error: `فشل تحميل المعاينة: ${e.message}`
-      };
-  }
+ } catch (e) {
+     Logger.log(`Error in getSlidesForPreview: ${e.stack}`);
+     return {
+         error: `فشل تحميل المعاينة: ${e.message}`
+     };
+ }
 }
 
 
+function importSelectedSlides(selectedSlides, folderId, orderedIds) {
+ if (!selectedSlides || selectedSlides.length === 0) {
+     return {
+         error: 'لم يتم تحديد أي شرائح للاستيراد.'
+     };
+ }
+ // ترتيب الشرائح حسب قائمة ids المطلوبة إذا تم تمريرها
+ if (Array.isArray(orderedIds) && orderedIds.length > 0) {
+     const slideMap = {};
+     selectedSlides.forEach(slide => {
+         const id = slide.questionId || slide.slideId;
+         if (id) slideMap[id] = slide;
+     });
+     selectedSlides = orderedIds.map(id => slideMap[id]).filter(Boolean);
+ }
+ try {
+     const checkpointIndex = selectedSlides.findIndex(slide => slide.isCheckpoint);
 
 
+     if (checkpointIndex !== -1) {
+         for (let i = 0; i < selectedSlides.length; i++) {
+             // Only apply automatic placement logic to slides at or after the checkpoint
+             if (i >= checkpointIndex) {
+                 const slide = selectedSlides[i];
+                 if (i < checkpointIndex + 5) {
+                     slide.placement = 'live';
+                 } else {
+                     if (slide.questionType === 'frq' || slide.questionType === 'frq_ai') {
+                         slide.placement = 'homework';
+                     } else {
+                         slide.placement = 'ai';
+                     }
+                 }
+             }
+             // Slides before the checkpoint (i < checkpointIndex) are intentionally left untouched
+             // to preserve the user's manual placement settings (e.g., 'example').
+         }
+     }
 
 
-
-
-function importSelectedSlides(selectedSlides, folderId) {
-  if (!selectedSlides || selectedSlides.length === 0) {
-      return {
-          error: 'لم يتم تحديد أي شرائح للاستيراد.'
-      };
-  }
-  try {
-      const checkpointIndex = selectedSlides.findIndex(slide => slide.isCheckpoint);
-
-
-
-
-      if (checkpointIndex !== -1) {
-          for (let i = 0; i < selectedSlides.length; i++) {
-              // Only apply automatic placement logic to slides at or after the checkpoint
-              if (i >= checkpointIndex) {
-                  const slide = selectedSlides[i];
-                  if (i < checkpointIndex + 5) {
-                      slide.placement = 'live';
-                  } else {
-                      if (slide.questionType === 'frq' || slide.questionType === 'frq_ai') {
-                          slide.placement = 'homework';
-                      } else {
-                          slide.placement = 'ai';
-                      }
-                  }
-              }
-              // Slides before the checkpoint (i < checkpointIndex) are intentionally left untouched
-              // to preserve the user's manual placement settings (e.g., 'example').
-          }
-      }
-
-
-
-
-      const presentation = SlidesApp.getActivePresentation();
-      const imageFolder = folderId ? DriveApp.getFolderById(folderId) : null;
-      selectedSlides.forEach(slideData => {
-          processSingleSlide(presentation, slideData, imageFolder);
-      });
-      const properties = PropertiesService.getUserProperties();
-      const importedIdsJson = properties.getProperty(CONFIG.PROPERTIES.IMPORTED_IDS) || '{}';
-      const importedIds = JSON.parse(importedIdsJson);
-      selectedSlides.forEach(slideData => {
-          const id = slideData.questionId || slideData.slideId;
-          if (id) {
-              importedIds[id] = true;
-          }
-      });
-      properties.setProperty(CONFIG.PROPERTIES.IMPORTED_IDS, JSON.stringify(importedIds));
-      return selectedSlides.map(s => s.questionId || s.slideId).filter(Boolean);
-  } catch (e) {
-      Logger.log(`Import failed: ${e.stack}`);
-      return {
-          error: `❌ حدث خطأ أثناء الاستيراد: ${e.message}`
-      };
-  }
+     const presentation = SlidesApp.getActivePresentation();
+     const imageFolder = folderId ? DriveApp.getFolderById(folderId) : null;
+     selectedSlides.forEach(slideData => {
+         processSingleSlide(presentation, slideData, imageFolder);
+     });
+     const properties = PropertiesService.getUserProperties();
+     const importedIdsJson = properties.getProperty(CONFIG.PROPERTIES.IMPORTED_IDS) || '{}';
+     const importedIds = JSON.parse(importedIdsJson);
+     selectedSlides.forEach(slideData => {
+         const id = slideData.questionId || slideData.slideId;
+         if (id) {
+             importedIds[id] = true;
+         }
+     });
+     properties.setProperty(CONFIG.PROPERTIES.IMPORTED_IDS, JSON.stringify(importedIds));
+     return selectedSlides.map(s => s.questionId || s.slideId).filter(Boolean);
+ } catch (e) {
+     Logger.log(`Import failed: ${e.stack}`);
+     return {
+         error: `❌ حدث خطأ أثناء الاستيراد: ${e.message}`
+     };
+ }
 }
-
-
 
 
 // =====================
 //  Parsing Functions - دوال تحليل محتوى HTML
 // =====================
 function cleanHtmlText(text) {
-  if (!text) return '';
-  return text.replace(/<p[^>]*>/g, '\n').replace(/<\/p>/g, '\n').replace(/<br\s*\/?>/g, '\n').replace(/<span[^>]*>/g, '').replace(/<\/span>/g, '').replace(/<div[^>]*>/g, '').replace(/<\/div>/g, '').replace(/<.*?>/g, ' ').replace(/&laquo;/g, '«').replace(/&raquo;/g, '»').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\s+/g, ' ').replace(/^[A-Z]\s*[\.\-\)]\s*/, '').trim();
+ if (!text) return '';
+ return text.replace(/<p[^>]*>/g, '\n').replace(/<\/p>/g, '\n').replace(/<br\s*\/?>/g, '\n').replace(/<span[^>]*>/g, '').replace(/<\/span>/g, '').replace(/<div[^>]*>/g, '').replace(/<\/div>/g, '').replace(/<.*?>/g, ' ').replace(/&laquo;/g, '«').replace(/&raquo;/g, '»').replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/\s+/g, ' ').replace(/^[A-Z]\s*[\.\-\)]\s*/, '').trim();
 }
-
-
 
 
 function extractMCQOptions(slideHtml) {
-  const answerOptions = [];
-  let correctAnswerIndex = null;
-  const cleanOptionText = (text) => text ? text.replace(/<.*?>/g, ' ').replace(/\s+/g, ' ').trim() : '';
-  const answersHtmlMatch = slideHtml.match(/<ul[^>]*class="[^"]*mcq_choices[^"]*"[^>]*>([\s\S]*?)<\/ul>/i);
-  if (!answersHtmlMatch) {
-      return {
-          answerOptions: [],
-          correctAnswerIndex: null
-      };
-  }
+ const answerOptions = [];
+ let correctAnswerIndex = null;
+ const cleanOptionText = (text) => text ? text.replace(/<.*?>/g, ' ').replace(/\s+/g, ' ').trim() : '';
+ const answersHtmlMatch = slideHtml.match(/<ul[^>]*class="[^"]*mcq_choices[^"]*"[^>]*>([\s\S]*?)<\/ul>/i);
+ if (!answersHtmlMatch) {
+     return {
+         answerOptions: [],
+         correctAnswerIndex: null
+     };
+ }
 
 
-
-
-  const choicesHtml = answersHtmlMatch[1];
-  const liRegex = /<li[^>]*>([\s\S]*?)<\/li>/g;
-  let liMatch;
-  let index = 0;
-  while ((liMatch = liRegex.exec(choicesHtml)) !== null) {
-      const innerLi = liMatch[1].trim();
-      const isCorrect = /class="[^"]*correct[^"]*"/i.test(liMatch[0]);
-      if (isCorrect) {
-          correctAnswerIndex = index;
-      }
-      const textAfterSpan = innerLi.replace(/<span[^>]*>[A-Z]<\/span>/i, '').trim();
-      const cleanOption = cleanOptionText(textAfterSpan);
-      if (cleanOption) {
-          answerOptions.push(cleanOption);
-      }
-      index++;
-  }
-  return {
-      answerOptions,
-      correctAnswerIndex
-  };
+ const choicesHtml = answersHtmlMatch[1];
+ const liRegex = /<li[^>]*>([\s\S]*?)<\/li>/g;
+ let liMatch;
+ let index = 0;
+ while ((liMatch = liRegex.exec(choicesHtml)) !== null) {
+     const innerLi = liMatch[1].trim();
+     const isCorrect = /class="[^"]*correct[^"]*"/i.test(liMatch[0]);
+     if (isCorrect) {
+         correctAnswerIndex = index;
+     }
+     const textAfterSpan = innerLi.replace(/<span[^>]*>[A-Z]<\/span>/i, '').trim();
+     const cleanOption = cleanOptionText(textAfterSpan);
+     if (cleanOption) {
+         answerOptions.push(cleanOption);
+     }
+     index++;
+ }
+ return {
+     answerOptions,
+     correctAnswerIndex
+ };
 }
-
-
 
 
 function parseSessionFormat(slideHtml, index) {
-  const metadata = {};
-  const metadataBlockMatch = slideHtml.match(CONFIG.REGEX.SESSION_METADATA_BLOCK);
-  if (metadataBlockMatch) {
-      let match;
-      const regex = new RegExp(CONFIG.REGEX.SESSION_METADATA_ITEM.source, 'g');
-      while ((match = regex.exec(metadataBlockMatch[1])) !== null) {
-          const key = match[1].trim();
-          const value = match[2].replace(/<\/?[^>]+(>|$)/g, "").trim();
-          metadata[key] = value;
-      }
-  }
+ const metadata = {};
+ const metadataBlockMatch = slideHtml.match(CONFIG.REGEX.SESSION_METADATA_BLOCK);
+ if (metadataBlockMatch) {
+     let match;
+     const regex = new RegExp(CONFIG.REGEX.SESSION_METADATA_ITEM.source, 'g');
+     while ((match = regex.exec(metadataBlockMatch[1])) !== null) {
+         const key = match[1].trim();
+         const value = match[2].replace(/<\/?[^>]+(>|$)/g, "").trim();
+         metadata[key] = value;
+     }
+ }
 
 
+ const questionIdMatch = slideHtml.match(CONFIG.REGEX.SESSION_QUESTION_ID);
+ const isQuestion = 'question_type' in metadata || !!questionIdMatch;
 
 
-  const questionIdMatch = slideHtml.match(CONFIG.REGEX.SESSION_QUESTION_ID);
-  const isQuestion = 'question_type' in metadata || !!questionIdMatch;
+ let uniqueId;
+ let finalQuestionId = null;
+ let finalSlideId = null;
 
 
+ if (isQuestion) {
+     uniqueId = questionIdMatch ? questionIdMatch[1] : null;
+     finalQuestionId = uniqueId;
+ } else { // It's an explanation slide
+     uniqueId = metadata.slide_id;
+     finalSlideId = uniqueId;
+ }
 
 
-  let uniqueId;
-  let finalQuestionId = null;
-  let finalSlideId = null;
+ if (!uniqueId) {
+     const hash = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, slideHtml);
+     uniqueId = 'gen-' + Utilities.base64Encode(hash).replace(/[/+=]/g, '').substring(0, 16);
+     if (isQuestion) {
+         finalQuestionId = uniqueId;
+     } else {
+         finalSlideId = uniqueId;
+     }
+ }
 
 
+ const titleMatch = slideHtml.match(CONFIG.REGEX.TITLE_TEXT);
+ let title = titleMatch ? cleanHtmlText(titleMatch[1]) : ` شريحة  ${index + 1}`;
+ if (title === 'Table of Contents') {
+     title = ' محتوى الحصة ';
+ }
 
 
-  if (isQuestion) {
-      uniqueId = questionIdMatch ? questionIdMatch[1] : null;
-      finalQuestionId = uniqueId;
-  } else { // It's an explanation slide
-      uniqueId = metadata.slide_id;
-      finalSlideId = uniqueId;
-  }
+ const questionBodyMatch = slideHtml.match(CONFIG.REGEX.SESSION_QUESTION_BODY);
+ const questionBody = questionBodyMatch ? cleanHtmlText(questionBodyMatch[1]) : null;
+ let answerOptions = [];
+ if (isQuestion && metadata.question_type === 'mcq') {
+     const result = extractMCQOptions(slideHtml);
+     answerOptions = result.answerOptions;
+ }
 
 
-
-
-  if (!uniqueId) {
-      const hash = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, slideHtml);
-      uniqueId = 'gen-' + Utilities.base64Encode(hash).replace(/[/+=]/g, '').substring(0, 16);
-      if (isQuestion) {
-          finalQuestionId = uniqueId;
-      } else {
-          finalSlideId = uniqueId;
-      }
-  }
-
-
-
-
-  const titleMatch = slideHtml.match(CONFIG.REGEX.TITLE_TEXT);
-  let title = titleMatch ? cleanHtmlText(titleMatch[1]) : ` شريحة  ${index + 1}`;
-  if (title === 'Table of Contents') {
-      title = ' محتوى الحصة ';
-  }
-
-
-
-
-  const questionBodyMatch = slideHtml.match(CONFIG.REGEX.SESSION_QUESTION_BODY);
-  const questionBody = questionBodyMatch ? cleanHtmlText(questionBodyMatch[1]) : null;
-  let answerOptions = [];
-  if (isQuestion && metadata.question_type === 'mcq') {
-      const result = extractMCQOptions(slideHtml);
-      answerOptions = result.answerOptions;
-  }
-
-
-
-
-  return {
-      html: slideHtml,
-      title: title,
-      originalTitle: title,
-      imageName: (slideHtml.match(CONFIG.REGEX.IMAGE_SRC) || [])[1] || null,
-      imageUrl: null,
-      sectionId: metadata.section_id || null,
-      slideId: finalSlideId,
-      questionId: finalQuestionId,
-      sectionType: metadata.section_type || null,
-      sectionTitle: metadata.section_title || null,
-      isQuestion: isQuestion,
-      showSectionId: false,
-      questionType: metadata.question_type || metadata.slide_type || null,
-      questionBody: questionBody,
-      answerOptions: answerOptions,
-      correctAnswerIndex: isQuestion && metadata.question_type === 'mcq' ? extractMCQOptions(slideHtml).correctAnswerIndex : null,
-      isCheckpoint: false, // Always default to false, user will set it in the UI
-      placement: metadata.question_placement || 'live'
-  };
+ return {
+     html: slideHtml,
+     title: title,
+     originalTitle: title,
+     imageName: (slideHtml.match(CONFIG.REGEX.IMAGE_SRC) || [])[1] || null,
+     imageUrl: null,
+     sectionId: metadata.section_id || null,
+     slideId: finalSlideId,
+     questionId: finalQuestionId,
+     sectionType: metadata.section_type || null,
+     sectionTitle: metadata.section_title || null,
+     isQuestion: isQuestion,
+     showSectionId: false,
+     questionType: metadata.question_type || metadata.slide_type || null,
+     questionBody: questionBody,
+     answerOptions: answerOptions,
+     correctAnswerIndex: isQuestion && metadata.question_type === 'mcq' ? extractMCQOptions(slideHtml).correctAnswerIndex : null,
+     isCheckpoint: false, // Always default to false, user will set it in the UI
+     placement: isQuestion ? (metadata.question_placement || 'live') : 'شرح'
+ };
 }
-
-
-
-
-
-
 
 
 function parseBankFormat(blockHtml, index) {
-  const slides = [];
-  const mainQuestionIdMatch = blockHtml.match(CONFIG.REGEX.BANK_QUESTION_ID_ATTR);
-  if (!mainQuestionIdMatch) return null;
-  const mainQuestionId = mainQuestionIdMatch[1];
+ const slides = [];
+ const mainQuestionIdMatch = blockHtml.match(CONFIG.REGEX.BANK_QUESTION_ID_ATTR);
+ if (!mainQuestionIdMatch) return null;
+ const mainQuestionId = mainQuestionIdMatch[1];
 
 
+ const imageUrlMatch = blockHtml.match(CONFIG.REGEX.BANK_IMAGE_URL);
+ const imageUrl = imageUrlMatch ? imageUrlMatch[1] : null;
 
 
-  const imageUrlMatch = blockHtml.match(CONFIG.REGEX.BANK_IMAGE_URL);
-  const imageUrl = imageUrlMatch ? imageUrlMatch[1] : null;
+ const partBlocksRegex = /<div class="question stand_alone part"[\s\S]*?<\/div>/g;
+ const partBlocks = blockHtml.match(partBlocksRegex);
 
 
+ if (partBlocks && partBlocks.length > 0) { // Multi-part question
+     const preambleRegex = /<div class="question-number"[\s\S]*?<\/div>([\s\S]*?)<div class="question stand_alone part"/;
+     const preambleMatch = blockHtml.match(preambleRegex);
+     const sharedPreamble = preambleMatch ? cleanHtmlText(preambleMatch[1]) : '';
 
 
-  const partBlocksRegex = /<div class="question stand_alone part"[\s\S]*?<\/div>/g;
-  const partBlocks = blockHtml.match(partBlocksRegex);
+     partBlocks.forEach(partHtml => {
+         const partNoMatch = partHtml.match(/data-partno="(\d+)"/);
+         if (!partNoMatch) return;
+         const partNo = partNoMatch[1];
+         const partId = `${mainQuestionId}.${partNo}`;
 
 
+         const partTypeMatch = partHtml.match(CONFIG.REGEX.BANK_IS_QUESTION_ATTR);
+         const questionType = partTypeMatch ? partTypeMatch[1] : 'mcq';
 
 
-  if (partBlocks && partBlocks.length > 0) { // Multi-part question
-      const preambleRegex = /<div class="question-number"[\s\S]*?<\/div>([\s\S]*?)<div class="question stand_alone part"/;
-      const preambleMatch = blockHtml.match(preambleRegex);
-      const sharedPreamble = preambleMatch ? cleanHtmlText(preambleMatch[1]) : '';
+         const stemMatch = partHtml.match(/<div class="stem">([\s\S]*?)<\/div>/);
+         let questionBody = stemMatch ? cleanHtmlText(stemMatch[1]) : '';
+         if (sharedPreamble) {
+             questionBody = `${sharedPreamble}\n\n${questionBody}`;
+         }
 
 
+         const {
+             answerOptions,
+             correctAnswerIndex
+         } = (questionType === 'mcq') ? extractMCQOptions(partHtml) : {
+             answerOptions: [],
+             correctAnswerIndex: null
+         };
+         let placement = (questionType === 'frq' || questionType === 'frq_ai') ? 'homework' : 'ai';
+         const originalTitle = ` سؤال  ${mainQuestionId}   ( جزء  ${partNo})`;
 
 
-      partBlocks.forEach(partHtml => {
-          const partNoMatch = partHtml.match(/data-partno="(\d+)"/);
-          if (!partNoMatch) return;
-          const partNo = partNoMatch[1];
-          const partId = `${mainQuestionId}.${partNo}`;
+         slides.push({
+             html: partHtml,
+             title: originalTitle,
+             originalTitle: originalTitle,
+             imageName: null,
+             imageUrl: imageUrl,
+             questionId: partId,
+             isQuestion: true,
+             questionType: questionType,
+             questionBody: questionBody,
+             answerOptions: answerOptions,
+             correctAnswerIndex: correctAnswerIndex,
+             placement: placement,
+             isCheckpoint: false
+         });
+     });
+ } else { // Single-part question
+     const questionTypeMatch = blockHtml.match(CONFIG.REGEX.BANK_IS_QUESTION_ATTR);
+     if (!questionTypeMatch) return null;
+     const questionType = questionTypeMatch[1];
 
 
+     const bodyMatch = blockHtml.match(CONFIG.REGEX.BANK_QUESTION_BODY);
+     const questionBody = bodyMatch ? cleanHtmlText(bodyMatch[1]) : null;
 
 
-          const partTypeMatch = partHtml.match(CONFIG.REGEX.BANK_IS_QUESTION_ATTR);
-          const questionType = partTypeMatch ? partTypeMatch[1] : 'mcq';
+     const titleMatch = blockHtml.match(CONFIG.REGEX.TITLE_TEXT);
+     const originalTitle = titleMatch ? cleanHtmlText(titleMatch[1]) : ` سؤال  ${mainQuestionId}`;
 
 
+     const {
+         answerOptions,
+         correctAnswerIndex
+     } = (questionType === 'mcq') ? extractMCQOptions(blockHtml) : {
+         answerOptions: [],
+         correctAnswerIndex: null
+     };
+     let placement = (questionType === 'frq' || questionType === 'frq_ai') ? 'homework' : 'ai';
 
 
-          const stemMatch = partHtml.match(/<div class="stem">([\s\S]*?)<\/div>/);
-          let questionBody = stemMatch ? cleanHtmlText(stemMatch[1]) : '';
-          if (sharedPreamble) {
-              questionBody = `${sharedPreamble}\n\n${questionBody}`;
-          }
-
-
-
-
-          const {
-              answerOptions,
-              correctAnswerIndex
-          } = (questionType === 'mcq') ? extractMCQOptions(partHtml) : {
-              answerOptions: [],
-              correctAnswerIndex: null
-          };
-          let placement = (questionType === 'frq' || questionType === 'frq_ai') ? 'homework' : 'ai';
-          const originalTitle = ` سؤال  ${mainQuestionId}   ( جزء  ${partNo})`;
-
-
-
-
-          slides.push({
-              html: partHtml,
-              title: originalTitle,
-              originalTitle: originalTitle,
-              imageName: null,
-              imageUrl: imageUrl,
-              questionId: partId,
-              isQuestion: true,
-              questionType: questionType,
-              questionBody: questionBody,
-              answerOptions: answerOptions,
-              correctAnswerIndex: correctAnswerIndex,
-              placement: placement,
-              isCheckpoint: false
-          });
-      });
-  } else { // Single-part question
-      const questionTypeMatch = blockHtml.match(CONFIG.REGEX.BANK_IS_QUESTION_ATTR);
-      if (!questionTypeMatch) return null;
-      const questionType = questionTypeMatch[1];
-
-
-
-
-      const bodyMatch = blockHtml.match(CONFIG.REGEX.BANK_QUESTION_BODY);
-      const questionBody = bodyMatch ? cleanHtmlText(bodyMatch[1]) : null;
-
-
-
-
-      const titleMatch = blockHtml.match(CONFIG.REGEX.TITLE_TEXT);
-      const originalTitle = titleMatch ? cleanHtmlText(titleMatch[1]) : ` سؤال  ${mainQuestionId}`;
-
-
-
-
-      const {
-          answerOptions,
-          correctAnswerIndex
-      } = (questionType === 'mcq') ? extractMCQOptions(blockHtml) : {
-          answerOptions: [],
-          correctAnswerIndex: null
-      };
-      let placement = (questionType === 'frq' || questionType === 'frq_ai') ? 'homework' : 'ai';
-
-
-
-
-      slides.push({
-          html: blockHtml,
-          title: originalTitle,
-          originalTitle: originalTitle,
-          imageName: null,
-          imageUrl: imageUrl,
-          questionId: mainQuestionId,
-          isQuestion: true,
-          questionType: questionType,
-          questionBody: questionBody,
-          answerOptions: answerOptions,
-          correctAnswerIndex: correctAnswerIndex,
-          placement: placement,
-          isCheckpoint: false
-      });
-  }
-  return slides;
+     slides.push({
+         html: blockHtml,
+         title: originalTitle,
+         originalTitle: originalTitle,
+         imageName: null,
+         imageUrl: imageUrl,
+         questionId: mainQuestionId,
+         isQuestion: true,
+         questionType: questionType,
+         questionBody: questionBody,
+         answerOptions: answerOptions,
+         correctAnswerIndex: correctAnswerIndex,
+         placement: placement,
+         isCheckpoint: false
+     });
+ }
+ return slides;
 }
-
-
-
-
-
-
 
 
 function parseQueryFormat(html, index, importedIds, deletedQuestions) {
-  const slides = [];
-  const questionBlocks = html.split('<hr class="question-separator">');
+ const slides = [];
+ const questionBlocks = html.split('<hr class="question-separator">');
 
 
+ questionBlocks.forEach(block => {
+     if (!block.trim()) return;
+     const questionIdMatch = block.match(CONFIG.REGEX.QUERY_QUESTION_ID);
+     if (questionIdMatch) {
+         const questionId = questionIdMatch[1];
+         if (!importedIds[questionId] && (!deletedQuestions || !deletedQuestions.includes(questionId))) {
+             const titleMatch = block.match(CONFIG.REGEX.QUESTION_TITLE);
+             const bodyMatch = block.match(CONFIG.REGEX.QUERY_QUESTION_BODY);
+             const answerChoicesMatches = [...block.matchAll(CONFIG.REGEX.ANSWER_CHOICE)];
+             const correctAnswerMatch = block.match(CONFIG.REGEX.CORRECT_ANSWER);
+             const answerOptions = answerChoicesMatches.map(m => m[1].trim());
+             let correctAnswerIndex = null;
+             if (correctAnswerMatch) {
+                 const correctAnsw = correctAnswerMatch[1].trim();
+                 correctAnswerIndex = answerOptions.findIndex(opt => opt === correctAnsw);
+             }
 
 
-  questionBlocks.forEach(block => {
-      if (!block.trim()) return;
-      const questionIdMatch = block.match(CONFIG.REGEX.QUERY_QUESTION_ID);
-      if (questionIdMatch) {
-          const questionId = questionIdMatch[1];
-          if (!importedIds[questionId] && (!deletedQuestions || !deletedQuestions.includes(questionId))) {
-              const titleMatch = block.match(CONFIG.REGEX.QUESTION_TITLE);
-              const bodyMatch = block.match(CONFIG.REGEX.QUERY_QUESTION_BODY);
-              const answerChoicesMatches = [...block.matchAll(CONFIG.REGEX.ANSWER_CHOICE)];
-              const correctAnswerMatch = block.match(CONFIG.REGEX.CORRECT_ANSWER);
-              const answerOptions = answerChoicesMatches.map(m => m[1].trim());
-              let correctAnswerIndex = null;
-              if (correctAnswerMatch) {
-                  const correctAnsw = correctAnswerMatch[1].trim();
-                  correctAnswerIndex = answerOptions.findIndex(opt => opt === correctAnsw);
-              }
-
-
-
-
-              slides.push({
-                  slideId: `query-${questionId}`,
-                  questionId: questionId,
-                  title: titleMatch ? titleMatch[1] : 'Query Question',
-                  originalTitle: titleMatch ? titleMatch[1] : 'Query Question',
-                  questionBody: bodyMatch ? bodyMatch[1].trim() : '',
-                  answerOptions: answerOptions,
-                  correctAnswerIndex: correctAnswerIndex,
-                  isQuestion: true,
-                  placement: 'live',
-                  html: block.substring(0, 2000)
-              });
-          }
-      }
-  });
-  return slides;
+             slides.push({
+                 slideId: `query-${questionId}`,
+                 questionId: questionId,
+                 title: titleMatch ? titleMatch[1] : 'Query Question',
+                 originalTitle: titleMatch ? titleMatch[1] : 'Query Question',
+                 questionBody: bodyMatch ? bodyMatch[1].trim() : '',
+                 answerOptions: answerOptions,
+                 correctAnswerIndex: correctAnswerIndex,
+                 isQuestion: true,
+                 placement: 'live',
+                 html: block.substring(0, 2000)
+             });
+         }
+     }
+ });
+ return slides;
 }
-
-
 
 
 // =====================
 //  Slide Creation Functions - دوال إنشاء الشرائح وتنسيقها
 // =====================
 function processSingleSlide(presentation, slideData, imageFolder) {
-  const slide = presentation.appendSlide(SlidesApp.PredefinedLayout.BLANK);
-  let finalTitle = slideData.isQuestion ? (CONFIG.FINAL_SLIDE_TITLES[slideData.placement] || '   سؤال   ') : slideData.title;
-  addStyledTitle(slide, finalTitle, slideData.isCheckpoint);
+ const slide = presentation.appendSlide(SlidesApp.PredefinedLayout.BLANK);
+ let finalTitle = slideData.isQuestion ? (CONFIG.FINAL_SLIDE_TITLES[slideData.placement] || '   سؤال   ') : slideData.title;
+ addStyledTitle(slide, finalTitle, slideData.isCheckpoint);
 
 
+ let contentShape = null;
+ let imageShape = null;
+ const hasNote = !!(slideData.note && slideData.note.trim());
+ const hasImage = !!(slideData.imageName || slideData.imageUrl);
+ const hasText = slideData.isQuestion && !!slideData.questionBody;
 
 
-  let contentShape = null;
-  let imageShape = null;
-  const hasNote = !!(slideData.note && slideData.note.trim());
-  const hasImage = !!(slideData.imageName || slideData.imageUrl);
-  const hasText = slideData.isQuestion && !!slideData.questionBody;
+ if (hasImage && hasText) {
+     if (slideData.imageName && imageFolder) {
+         imageShape = addStyledImage(slide, slideData.imageName, imageFolder, hasNote, 'top');
+     } else if (slideData.imageUrl) {
+         imageShape = addStyledImageFromUrl(slide, slideData.imageUrl, hasNote, 'top');
+     }
+     contentShape = addQuestionContent(slide, slideData, hasNote, 'bottom');
+ } else if (hasText) {
+     contentShape = addQuestionContent(slide, slideData, hasNote, 'full');
+ } else if (hasImage) {
+     if (slideData.imageName && imageFolder) {
+         imageShape = addStyledImage(slide, slideData.imageName, imageFolder, hasNote, 'full');
+     } else if (slideData.imageUrl) {
+         imageShape = addStyledImageFromUrl(slide, slideData.imageUrl, hasNote, 'full');
+     }
+ }
 
 
+ const idTextLines = [];
+ if (slideData.isQuestion) {
+     // توحيد منطق المثال/المثال التفاعلي لأي سؤال (عادي أو متعدد الأجزاء)
+     if (slideData.placement === 'example' || slideData.placement === 'interactive example') {
+         idTextLines.push('slide_id: new');
+         idTextLines.push(`question_id: ${slideData.questionId}`);
+         idTextLines.push('homework: true');
+     } else if (slideData.questionId && slideData.questionId.includes('.')) {
+         idTextLines.push(`question_id: ${slideData.questionId}`);
+         idTextLines.push(`question_placement: ${slideData.placement || 'homework'}`);
+     } else if (slideData.placement === 'not_homework') {
+         if (slideData.questionId) idTextLines.push(`question_id: ${slideData.questionId}`);
+         idTextLines.push('question_placement: not_homework');
+     } else {
+         if (slideData.questionId) idTextLines.push(`question_id: ${slideData.questionId}`);
+         idTextLines.push(`question_placement: ${slideData.placement || 'live'}`);
+     }
+     // Second, independently check if it's a checkpoint and add the relevant lines.
+     if (slideData.isCheckpoint) {
+         if (!idTextLines.includes('checkpoint')) {
+             idTextLines.push('checkpoint');
+             idTextLines.push('required_correct: 3');
+             idTextLines.push('attempt_window: 5');
+         }
+     }
+ } else {
+     // Logic for non-question slides (e.g., instructional)
+     if (slideData.showSectionId && slideData.sectionId) idTextLines.push(`section_id: ${slideData.sectionId}`);
+     if (slideData.slideId) idTextLines.push(`slide_id: ${slideData.slideId}`);
+ }
 
 
-  if (hasImage && hasText) {
-      // Both: Image top, Text bottom
-      if (slideData.imageName && imageFolder) {
-          imageShape = addStyledImage(slide, slideData.imageName, imageFolder, hasNote, 'top');
-      } else if (slideData.imageUrl) {
-          imageShape = addStyledImageFromUrl(slide, slideData.imageUrl, hasNote, 'top');
-      }
-      contentShape = addQuestionContent(slide, slideData, hasNote, 'bottom');
-  } else if (hasText) {
-      // Only Text
-      contentShape = addQuestionContent(slide, slideData, hasNote, 'full');
-  } else if (hasImage) {
-      // Only Image
-      if (slideData.imageName && imageFolder) {
-          imageShape = addStyledImage(slide, slideData.imageName, imageFolder, hasNote, 'full');
-      } else if (slideData.imageUrl) {
-          imageShape = addStyledImageFromUrl(slide, slideData.imageUrl, hasNote, 'full');
-      }
-  }
-
-
-
-
-  const idTextLines = [];
-  if (slideData.isQuestion) {
-      // This logic is now refactored to be more robust.
-      // First, handle the standard placement text.
-      if (slideData.questionId && slideData.questionId.includes('.')) {
-          idTextLines.push(`question_id: ${slideData.questionId}`);
-          idTextLines.push(`question_placement: ${slideData.placement || 'homework'}`);
-      } else if (slideData.placement === 'example' || slideData.placement === 'interactive example') {
-          idTextLines.push('slide_id: new');
-          idTextLines.push(`question_id: ${slideData.questionId}`);
-          idTextLines.push('homework: true');
-      } else if (slideData.placement === 'not_homework') {
-          if (slideData.questionId) idTextLines.push(`question_id: ${slideData.questionId}`);
-          idTextLines.push('question_placement: not_homework');
-      } else {
-          if (slideData.questionId) idTextLines.push(`question_id: ${slideData.questionId}`);
-          idTextLines.push(`question_placement: ${slideData.placement || 'live'}`);
-      }
-
-
-
-
-      // Second, independently check if it's a checkpoint and add the relevant lines.
-      if (slideData.isCheckpoint) {
-          if (!idTextLines.includes('checkpoint')) { // Prevent duplicates just in case
-              idTextLines.push('checkpoint');
-              idTextLines.push('required_correct: 3');
-              idTextLines.push('attempt_window: 5');
-          }
-      }
-  } else {
-      // Logic for non-question slides (e.g., instructional)
-      if (slideData.showSectionId && slideData.sectionId) idTextLines.push(`section_id: ${slideData.sectionId}`);
-      if (slideData.slideId) idTextLines.push(`slide_id: ${slideData.slideId}`);
-  }
-
-
-
-
-  if (idTextLines.length > 0) {
-      addIdBox(slide, idTextLines.join('\n'), slideData.isCheckpoint);
-  }
-  // --- إضافة الملاحظة في النهاية ---
-  if (hasNote) {
-      try {
-          Utilities.sleep(100);
-          if (contentShape) {
-              const noteTop = contentShape.getTop() + contentShape.getHeight() + 10;
-              addNoteShape(slide, slideData.note, noteTop);
-          } else if (imageShape) {
-              const noteTop = imageShape.getTop() + imageShape.getHeight() + 10;
-              addNoteShape(slide, slideData.note, noteTop);
-          } else {
-              addNoteShape(slide, slideData.note);
-          }
-      } catch (e) {
-          Logger.log('Error adding note shape: ' + e);
-      }
-  }
+ if (idTextLines.length > 0) {
+     addIdBox(slide, idTextLines.join('\n'), slideData.isCheckpoint);
+ }
+ // --- إضافة الملاحظة في النهاية ---
+ if (hasNote) {
+     try {
+         Utilities.sleep(100);
+         if (contentShape) {
+             const noteTop = contentShape.getTop() + contentShape.getHeight() + 10;
+             addNoteShape(slide, slideData.note, noteTop);
+         } else if (imageShape) {
+             const noteTop = imageShape.getTop() + imageShape.getHeight() + 10;
+             addNoteShape(slide, slideData.note, noteTop);
+         } else {
+             addNoteShape(slide, slideData.note);
+         }
+     } catch (e) {
+         Logger.log('Error adding note shape: ' + e);
+     }
+ }
 }
-
-
-
-
-
-
 
 
 function addStyledTitle(slide, title, isCheckpoint) {
-  if (!title || !title.trim()) return;
-  const pageWidth = SlidesApp.getActivePresentation().getPageWidth();
-  const ID_BOX_WIDTH = CONFIG.LAYOUT.ID_BOX_WIDTH;
-  const idBoxHeight = isCheckpoint ? 70 : 50;
-  const TOP_POSITION = 10;
-  const titleWidth = pageWidth - ID_BOX_WIDTH - 30;
-  const titleLeft = ID_BOX_WIDTH + 20;
-  const titleShape = slide.insertShape(SlidesApp.ShapeType.RECTANGLE, titleLeft, TOP_POSITION, titleWidth, idBoxHeight);
-  titleShape.getFill().setSolidFill(CONFIG.UI.TITLE_FILL_COLOR);
-  titleShape.getBorder().setTransparent();
-  const textRange = titleShape.getText();
-  textRange.setText(title);
-  try {
-      textRange.getParagraphStyle().setParagraphAlignment(SlidesApp.ParagraphAlignment.CENTER);
-      textRange.getRuns().forEach(run => {
-          run.getTextStyle().setFontFamily('Arial').setFontSize(24).setBold(true).setForegroundColor(CONFIG.UI.TITLE_FONT_COLOR);
-      });
-  } catch (e) {
-      Logger.log(`Error styling title: ${title}. Error: ${e.toString()}`);
-  }
+ if (!title || !title.trim()) return;
+ const pageWidth = SlidesApp.getActivePresentation().getPageWidth();
+ const ID_BOX_WIDTH = CONFIG.LAYOUT.ID_BOX_WIDTH;
+ const idBoxHeight = isCheckpoint ? 70 : 50;
+ const TOP_POSITION = 10;
+ const titleWidth = pageWidth - ID_BOX_WIDTH - 30;
+ const titleLeft = ID_BOX_WIDTH + 20;
+ const titleShape = slide.insertShape(SlidesApp.ShapeType.RECTANGLE, titleLeft, TOP_POSITION, titleWidth, idBoxHeight);
+ titleShape.getFill().setSolidFill(CONFIG.UI.TITLE_FILL_COLOR);
+ titleShape.getBorder().setTransparent();
+ const textRange = titleShape.getText();
+ textRange.setText(title);
+ try {
+     textRange.getParagraphStyle().setParagraphAlignment(SlidesApp.ParagraphAlignment.CENTER);
+     textRange.getRuns().forEach(run => {
+         run.getTextStyle().setFontFamily('Arial').setFontSize(24).setBold(true).setForegroundColor(CONFIG.UI.TITLE_FONT_COLOR);
+     });
+ } catch (e) {
+     Logger.log(`Error styling title: ${title}. Error: ${e.toString()}`);
+ }
 }
-
-
 
 
 function addStyledImage(slide, imageName, imageFolder, hasNote, layoutHint = 'full') {
-  try {
-      const files = imageFolder.getFilesByName(imageName);
-      if (files.hasNext()) {
-          const imageBlob = files.next().getBlob();
-          return addStyledImageFromBlob(slide, imageBlob, hasNote, layoutHint);
-      } else {
-          Logger.log(`Image not found in Drive: ${imageName}`);
-      }
-  } catch (e) {
-      Logger.log(`Error adding image from Drive ${imageName}: ${e.message}`);
-  }
-  return null;
+ try {
+     const files = imageFolder.getFilesByName(imageName);
+     if (files.hasNext()) {
+         const imageBlob = files.next().getBlob();
+         return addStyledImageFromBlob(slide, imageBlob, hasNote, layoutHint);
+     } else {
+         Logger.log(`Image not found in Drive: ${imageName}`);
+     }
+ } catch (e) {
+     Logger.log(`Error adding image from Drive ${imageName}: ${e.message}`);
+ }
+ return null;
 }
-
-
 
 
 function addStyledImageFromUrl(slide, imageUrl, hasNote, layoutHint = 'full') {
-  try {
-      const imageBlob = UrlFetchApp.fetch(imageUrl).getBlob();
-      return addStyledImageFromBlob(slide, imageBlob, hasNote, layoutHint);
-  } catch (e) {
-      Logger.log(`Error fetching image from URL ${imageUrl}: ${e.message}`);
-  }
-  return null;
+ try {
+     const imageBlob = UrlFetchApp.fetch(imageUrl).getBlob();
+     return addStyledImageFromBlob(slide, imageBlob, hasNote, layoutHint);
+ } catch (e) {
+     Logger.log(`Error fetching image from URL ${imageUrl}: ${e.message}`);
+ }
+ return null;
 }
-
-
 
 
 function addStyledImageFromBlob(slide, imageBlob, hasNote, layoutHint = 'full') {
-  try {
-      const image = slide.insertImage(imageBlob);
-      const MARGIN = 20;
-      const HEADER_HEIGHT = 90;
-      const NOTE_HEIGHT = 80;
-      const NOTE_MARGIN = 20;
-      const presentation = SlidesApp.getActivePresentation();
-      const pageWidth = presentation.getPageWidth();
-      const pageHeight = presentation.getPageHeight();
-      const availableWidth = pageWidth - (MARGIN * 2);
-      let availableHeight;
-      let topPosition = HEADER_HEIGHT;
+ try {
+     const image = slide.insertImage(imageBlob);
+     const MARGIN = 20;
+     const HEADER_HEIGHT = 90;
+     const NOTE_HEIGHT = 80;
+     const NOTE_MARGIN = 20;
+     const presentation = SlidesApp.getActivePresentation();
+     const pageWidth = presentation.getPageWidth();
+     const pageHeight = presentation.getPageHeight();
+     const availableWidth = pageWidth - (MARGIN * 2);
+     let availableHeight;
+     let topPosition = HEADER_HEIGHT;
 
 
+     if (layoutHint === 'top') {
+         availableHeight = (pageHeight / 2) - HEADER_HEIGHT - (MARGIN / 2);
+     } else { // 'full'
+         availableHeight = pageHeight - HEADER_HEIGHT - MARGIN;
+         if (hasNote) {
+             availableHeight -= (NOTE_HEIGHT + NOTE_MARGIN);
+         }
+     }
 
 
-      if (layoutHint === 'top') {
-          availableHeight = (pageHeight / 2) - HEADER_HEIGHT - (MARGIN / 2);
-      } else { // 'full'
-          availableHeight = pageHeight - HEADER_HEIGHT - MARGIN;
-          if (hasNote) {
-              availableHeight -= (NOTE_HEIGHT + NOTE_MARGIN);
-          }
-      }
-
-
-
-
-      const originalWidth = image.getWidth();
-      const originalHeight = image.getHeight();
-      const aspectRatio = originalWidth / originalHeight;
-      let newWidth = availableWidth;
-      let newHeight = newWidth / aspectRatio;
-      if (newHeight > availableHeight) {
-          newHeight = availableHeight;
-          newWidth = newHeight * aspectRatio;
-      }
-      image.setWidth(newWidth);
-      image.setHeight(newHeight);
-      const left = (pageWidth - newWidth) / 2;
-      const top = topPosition + (availableHeight - newHeight) / 2;
-      image.setLeft(left).setTop(top);
-      return image;
-  } catch (e) {
-      Logger.log(`Error adding image blob: ${e.message}`);
-  }
-  return null;
+     const originalWidth = image.getWidth();
+     const originalHeight = image.getHeight();
+     const aspectRatio = originalWidth / originalHeight;
+     let newWidth = availableWidth;
+     let newHeight = newWidth / aspectRatio;
+     if (newHeight > availableHeight) {
+         newHeight = availableHeight;
+         newWidth = newHeight * aspectRatio;
+     }
+     image.setWidth(newWidth);
+     image.setHeight(newHeight);
+     const left = (pageWidth - newWidth) / 2;
+     const top = topPosition + (availableHeight - newHeight) / 2;
+     image.setLeft(left).setTop(top);
+     return image;
+ } catch (e) {
+     Logger.log(`Error adding image blob: ${e.message}`);
+ }
+ return null;
 }
-
-
 
 
 function addIdBox(slide, idText, isCheckpoint) {
-  if (!idText || !idText.trim()) return;
-  const {
-      ID_BOX_FILL_COLOR,
-      ID_BOX_BORDER_COLOR,
-      ID_BOX_FONT_COLOR,
-      ID_BOX_VALUE_FONT_COLOR,
-      ID_BOX_WIDTH
-  } = CONFIG.LAYOUT;
-  const ID_BOX_HEIGHT = isCheckpoint ? 70 : 50;
-  const TOP_POSITION = 10,
-      LEFT_MARGIN = 10;
-  const idShape = slide.insertShape(SlidesApp.ShapeType.RECTANGLE, LEFT_MARGIN, TOP_POSITION, ID_BOX_WIDTH, ID_BOX_HEIGHT);
-  idShape.getFill().setSolidFill(ID_BOX_FILL_COLOR);
-  const border = idShape.getBorder();
-  border.setWeight(1);
-  border.getLineFill().setSolidFill(ID_BOX_BORDER_COLOR);
-  const textRange = idShape.getText();
-  textRange.setText(idText);
-  const overallStyle = textRange.getTextStyle();
-  overallStyle.setFontFamily('Noto Naskh Arabic');
-  overallStyle.setFontSize(10);
-  try {
-      textRange.getParagraphs().forEach(paragraph => {
-          const paraText = paragraph.getRange().asString();
-          const colonIndex = paraText.indexOf(':');
-          if (colonIndex !== -1) {
-              const keyRange = paragraph.getRange().getRange(0, colonIndex + 1);
-              keyRange.getTextStyle().setBold(true).setForegroundColor(ID_BOX_FONT_COLOR);
-              const valueRange = paragraph.getRange().getRange(colonIndex + 1, paraText.length);
-              valueRange.getTextStyle().setBold(false).setForegroundColor(ID_BOX_VALUE_FONT_COLOR);
-          } else {
-              paragraph.getRange().getTextStyle().setBold(true).setForegroundColor(ID_BOX_FONT_COLOR);
-          }
-      });
-      textRange.getParagraphs().forEach(paragraph => {
-          paragraph.setParagraphAlignment(SlidesApp.ParagraphAlignment.LEFT);
-      });
-  } catch (e) {
-      Logger.log(`Error applying styles to ID box: ${e.message}`);
-  }
+ if (!idText || !idText.trim()) return;
+ const {
+     ID_BOX_FILL_COLOR,
+     ID_BOX_BORDER_COLOR,
+     ID_BOX_FONT_COLOR,
+     ID_BOX_VALUE_FONT_COLOR,
+     ID_BOX_WIDTH
+ } = CONFIG.LAYOUT;
+ const ID_BOX_HEIGHT = isCheckpoint ? 70 : 50;
+ const TOP_POSITION = 10,
+     LEFT_MARGIN = 10;
+ const idShape = slide.insertShape(SlidesApp.ShapeType.RECTANGLE, LEFT_MARGIN, TOP_POSITION, ID_BOX_WIDTH, ID_BOX_HEIGHT);
+ idShape.getFill().setSolidFill(ID_BOX_FILL_COLOR);
+ const border = idShape.getBorder();
+ border.setWeight(1);
+ border.getLineFill().setSolidFill(ID_BOX_BORDER_COLOR);
+ const textRange = idShape.getText();
+ textRange.setText(idText);
+ const overallStyle = textRange.getTextStyle();
+ overallStyle.setFontFamily('Noto Naskh Arabic');
+ overallStyle.setFontSize(10);
+ try {
+     textRange.getParagraphs().forEach(paragraph => {
+         const paraText = paragraph.getRange().asString();
+         const colonIndex = paraText.indexOf(':');
+         if (colonIndex !== -1) {
+             const keyRange = paragraph.getRange().getRange(0, colonIndex + 1);
+             keyRange.getTextStyle().setBold(true).setForegroundColor(ID_BOX_FONT_COLOR);
+             const valueRange = paragraph.getRange().getRange(colonIndex + 1, paraText.length);
+             valueRange.getTextStyle().setBold(false).setForegroundColor(ID_BOX_VALUE_FONT_COLOR);
+         } else {
+             paragraph.getRange().getTextStyle().setBold(true).setForegroundColor(ID_BOX_FONT_COLOR);
+         }
+     });
+     textRange.getParagraphs().forEach(paragraph => {
+         paragraph.setParagraphAlignment(SlidesApp.ParagraphAlignment.LEFT);
+     });
+ } catch (e) {
+     Logger.log(`Error applying styles to ID box: ${e.message}`);
+ }
 }
-
-
 
 
 function addQuestionContent(slide, slideData, hasNote, layoutHint = 'full') {
-  if (!slideData.isQuestion || !slideData.questionBody) return null;
-  const presentation = SlidesApp.getActivePresentation();
-  const pageWidth = presentation.getPageWidth();
-  const pageHeight = presentation.getPageHeight();
-  const MARGIN = 60;
-  const BOX_BG = '#f8f9fa';
-  const BOX_BORDER = '#e9ecef';
-  const NOTE_HEIGHT = 80;
-  const NOTE_MARGIN = 20;
+ if (!slideData.isQuestion || !slideData.questionBody) return null;
+ const presentation = SlidesApp.getActivePresentation();
+ const pageWidth = presentation.getPageWidth();
+ const pageHeight = presentation.getPageHeight();
+ const MARGIN = 60;
+ const BOX_BG = '#f8f9fa';
+ const BOX_BORDER = '#e9ecef';
+ const NOTE_HEIGHT = 80;
+ const NOTE_MARGIN = 20;
 
 
+ let contentTop, contentHeight;
 
 
-  let contentTop, contentHeight;
+ if (layoutHint === 'bottom') {
+     contentTop = pageHeight / 2 + (MARGIN / 2);
+     contentHeight = (pageHeight / 2) - MARGIN;
+ } else { // 'full'
+     contentTop = 110;
+     contentHeight = pageHeight - contentTop - MARGIN;
+ }
 
 
+ if (hasNote) {
+     contentHeight -= (NOTE_HEIGHT + NOTE_MARGIN);
+ }
 
 
-  if (layoutHint === 'bottom') {
-      contentTop = pageHeight / 2 + (MARGIN / 2);
-      contentHeight = (pageHeight / 2) - MARGIN;
-  } else { // 'full'
-      contentTop = 110;
-      contentHeight = pageHeight - contentTop - MARGIN;
-  }
-
-
-
-
-  if (hasNote) {
-      contentHeight -= (NOTE_HEIGHT + NOTE_MARGIN);
-  }
-
-
-
-
-  const contentWidth = pageWidth - (MARGIN * 2);
-  const contentShape = slide.insertShape(SlidesApp.ShapeType.RECTANGLE, MARGIN, contentTop, contentWidth, contentHeight);
-  contentShape.getFill().setSolidFill(BOX_BG);
-  contentShape.getBorder().setWeight(2).getLineFill().setSolidFill(BOX_BORDER);
-  const textRange = contentShape.getText();
-  let fullText = slideData.questionBody;
-  if (slideData.answerOptions && slideData.answerOptions.length > 0) {
-      fullText += '\n\n   الإجابات   :\n\n';
-      slideData.answerOptions.forEach((opt, i) => {
-          const isCorrect = slideData.correctAnswerIndex === i;
-          const marker = isCorrect ? '✓ ' : '';
-          fullText += `${marker}${String.fromCharCode(65 + i)}. ${opt}\n`;
-      });
-  }
-  textRange.setText(fullText);
-  try {
-      const paragraphs = textRange.getParagraphs();
-      paragraphs.forEach(p => {
-          const style = p.getParagraphStyle();
-          if (style) {
-              style.setParagraphAlignment(SlidesApp.ParagraphAlignment.RIGHT);
-          }
-      });
-      if (paragraphs.length > 0) {
-          paragraphs[0].getRange().getTextStyle().setFontFamily('Arial').setFontSize(hasNote ? 16 : 20).setBold(true).setForegroundColor('#374151');
-      }
-      for (let i = 1; i < paragraphs.length; i++) {
-          const paraText = paragraphs[i].getRange().asString().trim();
-          const paraRange = paragraphs[i].getRange();
-          if (paraText === '   الإجابات   :') {
-              paraRange.getTextStyle().setFontFamily('Arial').setFontSize(hasNote ? 13 : 16).setBold(true).setForegroundColor('#0072b4');
-          } else if (paraText.match(/^[A-Z]\./) || paraText.match(/^✓ [A-Z]\./)) {
-              const isCorrect = paraText.startsWith('✓');
-              paraRange.getTextStyle().setFontFamily('Arial').setFontSize(hasNote ? 14 : 18).setBold(isCorrect).setForegroundColor(isCorrect ? '#16a34a' : '#374151');
-              if (isCorrect) {
-                  paraRange.getTextStyle().setBackgroundColor('#d1fae5');
-              }
-          }
-      }
-  } catch (e) {
-      Logger.log(`Error during advanced styling for questionId ${slideData.questionId}. Error: ${e.toString()}.`);
-  }
-  contentShape.setLeft((pageWidth - contentWidth) / 2);
-  return contentShape;
+ const contentWidth = pageWidth - (MARGIN * 2);
+ const contentShape = slide.insertShape(SlidesApp.ShapeType.RECTANGLE, MARGIN, contentTop, contentWidth, contentHeight);
+ contentShape.getFill().setSolidFill(BOX_BG);
+ contentShape.getBorder().setWeight(2).getLineFill().setSolidFill(BOX_BORDER);
+ const textRange = contentShape.getText();
+ let fullText = slideData.questionBody;
+ if (slideData.answerOptions && slideData.answerOptions.length > 0) {
+     fullText += '\n\n   الإجابات   :\n\n';
+     slideData.answerOptions.forEach((opt, i) => {
+         const isCorrect = slideData.correctAnswerIndex === i;
+         const marker = isCorrect ? '✓ ' : '';
+         fullText += `${marker}${String.fromCharCode(65 + i)}. ${opt}\n`;
+     });
+ }
+ textRange.setText(fullText);
+ try {
+     const paragraphs = textRange.getParagraphs();
+     paragraphs.forEach(p => {
+         const style = p.getParagraphStyle();
+         if (style) {
+             style.setParagraphAlignment(SlidesApp.ParagraphAlignment.RIGHT);
+         }
+     });
+     if (paragraphs.length > 0) {
+         paragraphs[0].getRange().getTextStyle().setFontFamily('Arial').setFontSize(hasNote ? 16 : 20).setBold(true).setForegroundColor('#374151');
+     }
+     for (let i = 1; i < paragraphs.length; i++) {
+         const paraText = paragraphs[i].getRange().asString().trim();
+         const paraRange = paragraphs[i].getRange();
+         if (paraText === '   الإجابات   :') {
+             paraRange.getTextStyle().setFontFamily('Arial').setFontSize(hasNote ? 13 : 16).setBold(true).setForegroundColor('#0072b4');
+         } else if (paraText.match(/^[A-Z]\./) || paraText.match(/^✓ [A-Z]\./)) {
+             const isCorrect = paraText.startsWith('✓');
+             paraRange.getTextStyle().setFontFamily('Arial').setFontSize(hasNote ? 14 : 18).setBold(isCorrect).setForegroundColor(isCorrect ? '#16a34a' : '#374151');
+             if (isCorrect) {
+                 paraRange.getTextStyle().setBackgroundColor('#d1fae5');
+             }
+         }
+     }
+ } catch (e) {
+     Logger.log(`Error during advanced styling for questionId ${slideData.questionId}. Error: ${e.toString()}.`);
+ }
+ contentShape.setLeft((pageWidth - contentWidth) / 2);
+ return contentShape;
 }
-
-
-
-
-
-
 
 
 function addNoteShape(slide, noteText, customTop) {
-  const presentation = SlidesApp.getActivePresentation();
-  const pageWidth = presentation.getPageWidth();
-  const pageHeight = presentation.getPageHeight();
-  const MARGIN = 60;
-  const NOTE_HEIGHT = 80;
-  const noteWidth = pageWidth - (MARGIN * 2);
-  const noteShape = slide.insertShape(SlidesApp.ShapeType.RECTANGLE, MARGIN, customTop, noteWidth, NOTE_HEIGHT);
-  const textRange = noteShape.getText();
-  textRange.setText(`📝  ملحوظة :\n${noteText}`);
-  try {
-      const paragraphs = textRange.getParagraphs();
-      paragraphs.forEach(p => {
-          const style = p.getParagraphStyle();
-          if (style) {
-              style.setParagraphAlignment(SlidesApp.ParagraphAlignment.RIGHT);
-          }
-      });
+ const presentation = SlidesApp.getActivePresentation();
+ const pageWidth = presentation.getPageWidth();
+ const pageHeight = presentation.getPageHeight();
+ const MARGIN = 60;
+ const NOTE_HEIGHT = 80;
+ const noteWidth = pageWidth - (MARGIN * 2);
+ const noteShape = slide.insertShape(SlidesApp.ShapeType.RECTANGLE, MARGIN, customTop, noteWidth, NOTE_HEIGHT);
+ const textRange = noteShape.getText();
+ textRange.setText(`📝  ملحوظة :\n${noteText}`);
+ try {
+     const paragraphs = textRange.getParagraphs();
+     paragraphs.forEach(p => {
+         const style = p.getParagraphStyle();
+         if (style) {
+             style.setParagraphAlignment(SlidesApp.ParagraphAlignment.RIGHT);
+         }
+     });
 
 
+     if (paragraphs.length > 0) {
+         const titleRange = paragraphs[0].getRange();
+         titleRange.getTextStyle().setFontFamily('Arial').setFontSize(14).setBold(true).setForegroundColor('#856404');
+     }
 
 
-      if (paragraphs.length > 0) {
-          const titleRange = paragraphs[0].getRange();
-          titleRange.getTextStyle().setFontFamily('Arial').setFontSize(14).setBold(true).setForegroundColor('#856404');
-      }
+     if (paragraphs.length > 1) {
+         const noteRange = paragraphs[1].getRange();
+         noteRange.getTextStyle().setFontFamily('Arial').setFontSize(12).setBold(false).setForegroundColor('#856404');
+     }
 
 
-
-
-      if (paragraphs.length > 1) {
-          const noteRange = paragraphs[1].getRange();
-          noteRange.getTextStyle().setFontFamily('Arial').setFontSize(12).setBold(false).setForegroundColor('#856404');
-      }
-
-
-
-
-  } catch (e) {
-      Logger.log(`Error styling note shape: ${e.message}`);
-  }
-  noteShape.setLeft((pageWidth - noteWidth) / 2);
-  noteShape.setTop(customTop);
+ } catch (e) {
+     Logger.log(`Error styling note shape: ${e.message}`);
+ }
+ noteShape.setLeft((pageWidth - noteWidth) / 2);
+ noteShape.setTop(customTop);
 }
-
-
 
 
 // =====================
 //  Sheet & Utility Functions - دوال مساعدة وأدوات
 // =====================
 function getSheetRows(sheetUrl) {
-  try {
-      const fileIdMatch = sheetUrl.match(/[-\w]{25,}/);
-      if (!fileIdMatch) throw new Error('   رابط     الشيت     غير     صالح   ');
-      const fileId = fileIdMatch[0];
-      const ss = SpreadsheetApp.openById(fileId);
-      const sheet = ss.getSheets()[0];
-      const data = sheet.getDataRange().getValues();
-      if (data.length < 2) return [];
-      const headers = data[0].map(h => (h || '').toString().trim());
-      const requiredHeaders = ['question_id', 'section_no', 'question_type', 'question_placement'];
-      const headerIndices = {};
-      for (const h of requiredHeaders) {
-          const index = headers.indexOf(h);
-          if (index === -1) {
-              throw new Error(`   يجب     أن     يحتوي     الشيت     على     الأعمدة     المطلوبة  .   العمود     المفقود  : ${h}`);
-          }
-          headerIndices[h] = index;
-      }
-      return data.slice(1).map(row => {
-          if (!row[headerIndices.question_id]) return null;
-          return {
-              question_id: row[headerIndices.question_id].toString().trim(),
-              section_no: row[headerIndices.section_no] ? row[headerIndices.section_no].toString().trim() : '',
-              question_type: row[headerIndices.question_type] ? row[headerIndices.question_type].toString().trim() : '',
-              question_placement: row[headerIndices.question_placement] ? row[headerIndices.question_placement].toString().trim() : ''
-          };
-      }).filter(Boolean);
-  } catch (e) {
-      Logger.log(`getSheetRows Error: ${e.stack}`);
-      return {
-          error: e.message
-      };
-  }
+ try {
+     const fileIdMatch = sheetUrl.match(/[-\w]{25,}/);
+     if (!fileIdMatch) throw new Error('   رابط     الشيت     غير     صالح   ');
+     const fileId = fileIdMatch[0];
+     const ss = SpreadsheetApp.openById(fileId);
+     const sheet = ss.getSheets()[0];
+     const data = sheet.getDataRange().getValues();
+     if (data.length < 2) return [];
+     const headers = data[0].map(h => (h || '').toString().trim());
+     const requiredHeaders = ['question_id', 'section_no', 'question_type', 'question_placement'];
+     const headerIndices = {};
+     for (const h of requiredHeaders) {
+         const index = headers.indexOf(h);
+         if (index === -1) {
+             throw new Error(`   يجب     أن     يحتوي     الشيت     على     الأعمدة     المطلوبة  .   العمود     المفقود  : ${h}`);
+         }
+         headerIndices[h] = index;
+     }
+     return data.slice(1).map(row => {
+         if (!row[headerIndices.question_id]) return null;
+         return {
+             question_id: row[headerIndices.question_id].toString().trim(),
+             section_no: row[headerIndices.section_no] ? row[headerIndices.section_no].toString().trim() : '',
+             question_type: row[headerIndices.question_type] ? row[headerIndices.question_type].toString().trim() : '',
+             question_placement: row[headerIndices.question_placement] ? row[headerIndices.question_placement].toString().trim() : ''
+         };
+     }).filter(Boolean);
+ } catch (e) {
+     Logger.log(`getSheetRows Error: ${e.stack}`);
+     return {
+         error: e.message
+     };
+ }
 }
-
-
 
 
 function getImportedSlidesIds() {
-  const properties = PropertiesService.getUserProperties();
-  const importedIdsJson = properties.getProperty(CONFIG.PROPERTIES.IMPORTED_IDS) || '{}';
-  return JSON.parse(importedIdsJson);
+ const properties = PropertiesService.getUserProperties();
+ const importedIdsJson = properties.getProperty(CONFIG.PROPERTIES.IMPORTED_IDS) || '{}';
+ return JSON.parse(importedIdsJson);
 }
-
-
 
 
 function resetImportedSlidesServer() {
-  try {
-      const properties = PropertiesService.getUserProperties();
-      properties.deleteProperty(CONFIG.PROPERTIES.IMPORTED_IDS);
-      properties.deleteProperty(CONFIG.PROPERTIES.PREVIEW_STATE);
-      return true;
-  } catch (e) {
-      Logger.log(`Error resetting properties: ${e.stack}`);
-      throw new Error("Failed to reset properties on server.");
-  }
+ try {
+     const properties = PropertiesService.getUserProperties();
+     properties.deleteProperty(CONFIG.PROPERTIES.IMPORTED_IDS);
+     properties.deleteProperty(CONFIG.PROPERTIES.PREVIEW_STATE);
+     return true;
+ } catch (e) {
+     Logger.log(`Error resetting properties: ${e.stack}`);
+     throw new Error("Failed to reset properties on server.");
+ }
 }
-
-
 
 
 function addToDeletedQuestions(id) {
-  if (!id) return;
-  try {
-      const properties = PropertiesService.getUserProperties();
-      let deleted = properties.getProperty('DELETED_QUESTIONS');
-      let arr = deleted ? JSON.parse(deleted) : [];
-      if (!arr.includes(id)) {
-          arr.push(id);
-          properties.setProperty('DELETED_QUESTIONS', JSON.stringify(arr));
-      }
-  } catch (e) {
-      Logger.log('Error in addToDeletedQuestions: ' + e);
-  }
+ if (!id) return;
+ try {
+     const properties = PropertiesService.getUserProperties();
+     let deleted = properties.getProperty('DELETED_QUESTIONS');
+     let arr = deleted ? JSON.parse(deleted) : [];
+     if (!arr.includes(id)) {
+         arr.push(id);
+         properties.setProperty('DELETED_QUESTIONS', JSON.stringify(arr));
+     }
+ } catch (e) {
+     Logger.log('Error in addToDeletedQuestions: ' + e);
+ }
 }
-
-
 
 
 function getDeletedQuestions() {
-  const properties = PropertiesService.getUserProperties();
-  const deletedJson = properties.getProperty('DELETED_QUESTIONS');
-  return deletedJson ? JSON.parse(deletedJson) : [];
+ const properties = PropertiesService.getUserProperties();
+ const deletedJson = properties.getProperty('DELETED_QUESTIONS');
+ return deletedJson ? JSON.parse(deletedJson) : [];
 }
-
-
-
-
-
-
 
 
 
